@@ -1,0 +1,145 @@
+.bid-collection {
+  padding: 20px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.bid-collection h3 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.bid-collection p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.bid-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.bid-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-label {
+  min-width: 100px;
+  font-weight: bold;
+  color: #333;
+}
+
+.bid-input-row input {
+  padding: 8px 12px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 150px;
+}
+
+.bid-input-row input:focus {
+  outline: none;
+  border-color: #4CAF50;
+}
+
+.bid-input-row input.error {
+  border-color: #f44336;
+}
+
+.error-message {
+  color: #f44336;
+  font-size: 12px;
+  margin-left: 10px;
+}
+
+.submit-bids-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-bids-btn:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.submit-bids-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.bid-confirmation {
+  padding: 20px;
+  background-color: #e8f5e8;
+  border-radius: 8px;
+  margin: 20px 0;
+  border: 2px solid #4CAF50;
+}
+
+.bid-confirmation h3 {
+  color: #2e7d32;
+  margin-bottom: 15px;
+}
+
+.bid-summary {
+  margin-bottom: 20px;
+}
+
+.bid-summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #c8e6c9;
+}
+
+.player-name {
+  font-weight: bold;
+  color: #333;
+}
+
+.bid-value {
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.confirmation-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.confirm-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.cancel-btn {
+  background-color: #757575;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.confirm-btn:hover {
+  background-color: #45a049;
+}
+
+.cancel-btn:hover {
+  background-color: #616161;
+}
