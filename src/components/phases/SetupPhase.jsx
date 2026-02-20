@@ -54,7 +54,7 @@ const SetupPhase = ({ onComplete }) => {
         currentTrick: [],
         finalScores: null
       });
-      onComplete(players);
+      onComplete();
     }
   };
 

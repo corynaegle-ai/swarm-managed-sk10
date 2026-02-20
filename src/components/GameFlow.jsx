@@ -14,18 +14,6 @@ const GAME_PHASES = {
 
 const GameFlow = () => {
   const { gameState, updateGameState } = useGame();
-  const [currentPhase, setCurrentPhase] = useState(GAME_PHASES.SETUP);
-  const [currentRound, setCurrentRound] = useState(1);
-
-  // Initialize game phase from state or default to setup
-  useEffect(() => {
-    if (gameState?.gamePhase) {
-      setCurrentPhase(gameState.gamePhase);
-    }
-    if (gameState?.currentRound) {
-      setCurrentRound(gameState.currentRound);
-    }
-  }, [gameState]);
 
   const transitionToPhase = (nextPhase) => {
     // Validate phase transitions
@@ -36,15 +24,15 @@ const GameFlow = () => {
       [GAME_PHASES.COMPLETE]: [] // No transitions from complete
     };
 
-    if (!validTransitions[currentPhase].includes(nextPhase)) {
-      console.warn(`Invalid transition from ${currentPhase} to ${nextPhase}`);
+    if (!validTransitions[gameState.gamePhase].includes(nextPhase)) {
+      console.warn(`Invalid transition from ${gameState.gamePhase} to ${nextPhase}`);
       return;
     }
 
-    setCurrentPhase(nextPhase);
+    const newRound = nextPhase === GAME_PHASES.BIDDING && gameState.gamePhase === GAME_PHASES.SCORING ? gameState.currentRound + 1 : gameState.currentRound;
     updateGameState({ 
       gamePhase: nextPhase,
-      currentRound: nextPhase === GAME_PHASES.BIDDING && currentPhase === GAME_PHASES.SCORING ? currentRound + 1 : currentRound
+      currentRound: newRound
     });
   };
 
@@ -57,29 +45,28 @@ const GameFlow = () => {
   };
 
   const handleScoringComplete = () => {
-    if (currentRound >= 10) {
+    if (gameState.currentRound >= 10) {
       transitionToPhase(GAME_PHASES.COMPLETE);
     } else {
-      setCurrentRound(prev => prev + 1);
       transitionToPhase(GAME_PHASES.BIDDING);
     }
   };
 
   const renderCurrentPhase = () => {
-    switch (currentPhase) {
+    switch (gameState.gamePhase) {
       case GAME_PHASES.SETUP:
         return <SetupPhase onComplete={handleSetupComplete} />;
       case GAME_PHASES.BIDDING:
         return (
           <BiddingPhase 
-            round={currentRound}
+            round={gameState.currentRound}
             onComplete={handleBiddingComplete}
           />
         );
       case GAME_PHASES.SCORING:
         return (
           <ScoringPhase 
-            round={currentRound}
+            round={gameState.currentRound}
             onComplete={handleScoringComplete}
           />
         );
@@ -95,9 +82,9 @@ const GameFlow = () => {
       <div className="game-header">
         <h1>Spades Game</h1>
         <div className="phase-indicator">
-          <span className="current-phase">Phase: {currentPhase.toUpperCase()}</span>
-          {currentPhase !== GAME_PHASES.COMPLETE && (
-            <span className="round-indicator">Round: {currentRound}/10</span>
+          <span className="current-phase">Phase: {gameState.gamePhase.toUpperCase()}</span>
+          {gameState.gamePhase !== GAME_PHASES.COMPLETE && (
+            <span className="round-indicator">Round: {gameState.currentRound}/10</span>
           )}
         </div>
       </div>
