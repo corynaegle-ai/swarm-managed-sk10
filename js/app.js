@@ -15,7 +15,7 @@ class Game {
     this.roundDisplay = document.querySelector('#round-info');
     this.handsCountDisplay = document.querySelector('#hands-count');
     if (!this.roundDisplay || !this.handsCountDisplay) {
-      console.error('Required DOM elements not found');
+      throw new Error('Required DOM elements not found: #round-info and #hands-count');
     }
     this.updateRoundInfo();
   }
@@ -50,16 +50,28 @@ class Game {
       this.endGame();
       return;
     }
-    this.currentRound = new Round(this.currentRound.number + 1);
-    this.updateRoundInfo();
-    // Trigger next round logic, e.g., deal new hands
-    console.log('Advanced to round', this.currentRound.number);
+    try {
+      this.currentRound = new Round(this.currentRound.number + 1);
+      this.updateRoundInfo();
+      // Trigger next round logic, e.g., deal new hands
+      console.log('Advanced to round', this.currentRound.number);
+      // Assuming a method exists to deal hands; integrate here if available
+      // this.dealHands(); // Uncomment and implement if needed for smooth flow
+    } catch (error) {
+      console.error('Error advancing round:', error);
+      // Optionally, handle rollback or alert user
+    }
   }
 
   endGame() {
     this.gameEnded = true;
-    alert('Game Over!');
-    // Additional end game logic, e.g., show final scores
+    try {
+      alert('Game Over!');
+      // Additional end game logic, e.g., show final scores
+      console.log('Game ended after round', this.currentRound.number);
+    } catch (error) {
+      console.error('Error during game end:', error);
+    }
   }
 }
 
