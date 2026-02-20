@@ -1,5 +1,5 @@
-// Import scoring functions
-import { validateTrickEntry, updatePlayerRoundScore } from './scoring.js';
+// Scoring functions will be available from scoring.js loaded separately
+// Functions: validateTrickEntry, updatePlayerRoundScore
 
 // Game state management
 let gameState = {
@@ -21,17 +21,29 @@ function setupEventListeners() {
   if (trickForm) {
     trickForm.addEventListener('submit', handleTrickSubmission);
   }
+  
+  // Also initialize players when form is available
+  initializePlayersFromForm();
 }
 
 // Initialize game state
 function initializeGameState() {
-  // Get player names from form or initialize default players
+  // Initialize with empty players array - will be populated from form
+  if (gameState.players.length === 0) {
+    gameState.players = [];
+  }
+}
+
+// Initialize players from form elements
+function initializePlayersFromForm() {
   const playerInputs = document.querySelectorAll('.player-name');
-  gameState.players = Array.from(playerInputs).map((input, index) => ({
-    id: index + 1,
-    name: input.value || `Player ${index + 1}`,
-    scores: []
-  }));
+  if (playerInputs.length > 0 && gameState.players.length === 0) {
+    gameState.players = Array.from(playerInputs).map((input, index) => ({
+      id: index + 1,
+      name: input.value || `Player ${index + 1}`,
+      scores: []
+    }));
+  }
 }
 
 // Handle trick entry form submission
@@ -42,14 +54,37 @@ function handleTrickSubmission(event) {
     // Clear previous error messages
     clearErrorMessages();
     
+    // Ensure players are initialized
+    if (gameState.players.length === 0) {
+      initializePlayersFromForm();
+    }
+    
+    if (gameState.players.length === 0) {
+      displayError('No players found. Please ensure player inputs are available.');
+      return;
+    }
+    
     // Extract form data
     const formData = extractFormData();
+    
+    // Check if scoring functions are available
+    if (typeof validateTrickEntry !== 'function') {
+      displayError('Scoring functions not available. Please ensure scoring.js is loaded.');
+      return;
+    }
     
     // Validate trick entry
     const validationResult = validateTrickEntry(formData);
     
+    // Defensive check for validation result structure
+    if (!validationResult || typeof validationResult.isValid === 'undefined') {
+      displayError('Validation function returned invalid result.');
+      return;
+    }
+    
     if (!validationResult.isValid) {
-      displayValidationErrors(validationResult.errors);
+      const errors = validationResult.errors || ['Validation failed'];
+      displayValidationErrors(errors);
       return;
     }
     
@@ -78,13 +113,23 @@ function extractFormData() {
   
   // Extract trick values and bonus selections for each player
   gameState.players.forEach(player => {
-    const trickInput = document.querySelector(`#tricks-player-${player.id}`);
-    const bonusCheckbox = document.querySelector(`#bonus-player-${player.id}`);
+    // Try multiple possible ID patterns for form elements
+    let trickInput = document.querySelector(`#tricks-player-${player.id}`) ||
+                    document.querySelector(`#player-${player.id}-tricks`) ||
+                    document.querySelector(`[name="player${player.id}_tricks"]`);
+    
+    let bonusCheckbox = document.querySelector(`#bonus-player-${player.id}`) ||
+                       document.querySelector(`#player-${player.id}-bonus`) ||
+                       document.querySelector(`[name="player${player.id}_bonus"]`);
+    
+    if (!trickInput) {
+      console.warn(`Trick input not found for player ${player.id}`);
+    }
     
     formData.players.push({
       id: player.id,
       name: player.name,
-      tricks: parseInt(trickInput?.value || 0),
+      tricks: parseInt((trickInput?.value || '0')),
       bonus: bonusCheckbox?.checked || false
     });
   });
@@ -94,43 +139,81 @@ function extractFormData() {
 
 // Update player scores using scoring logic
 function updatePlayerScores(formData) {
+  // Check if scoring function is available
+  if (typeof updatePlayerRoundScore !== 'function') {
+    displayError('Scoring function updatePlayerRoundScore not available.');
+    return;
+  }
+  
   formData.players.forEach(playerData => {
     const player = gameState.players.find(p => p.id === playerData.id);
     if (player) {
-      const roundScore = updatePlayerRoundScore(
-        player,
-        playerData.tricks,
-        playerData.bonus,
-        gameState.currentRound
-      );
-      
-      // Update UI with new score
-      updatePlayerScoreDisplay(player.id, roundScore);
+      try {
+        const result = updatePlayerRoundScore(
+          player,
+          playerData.tricks,
+          playerData.bonus,
+          gameState.currentRound
+        );
+        
+        // Handle different possible return types from scoring function
+        let roundScore = 0;
+        if (typeof result === 'number') {
+          roundScore = result;
+        } else if (result && typeof result.score === 'number') {
+          roundScore = result.score;
+        } else {
+          console.warn(`Unexpected return from updatePlayerRoundScore:`, result);
+        }
+        
+        // Ensure player has scores array
+        if (!player.scores) {
+          player.scores = [];
+        }
+        
+        // Add round score to player's scores
+        player.scores.push(roundScore);
+        
+        // Update UI with new score
+        updatePlayerScoreDisplay(player.id, roundScore);
+        
+      } catch (error) {
+        console.error(`Error updating score for player ${player.name}:`, error);
+        displayError(`Error updating score for ${player.name}`);
+      }
     }
   });
 }
 
 // Display validation errors to the user
 function displayValidationErrors(errors) {
-  const errorContainer = document.getElementById('error-messages');
+  let errorContainer = document.getElementById('error-messages');
   if (!errorContainer) {
     createErrorContainer();
+    errorContainer = document.getElementById('error-messages');
+  }
+  
+  if (!errorContainer) {
+    console.error('Could not create or find error container');
+    return;
   }
   
   const errorList = document.createElement('ul');
   errorList.className = 'validation-errors';
   
-  errors.forEach(error => {
+  // Ensure errors is an array
+  const errorArray = Array.isArray(errors) ? errors : [errors];
+  
+  errorArray.forEach(error => {
     const errorItem = document.createElement('li');
-    errorItem.textContent = error;
+    errorItem.textContent = String(error);
     errorItem.className = 'error-message';
     errorList.appendChild(errorItem);
   });
   
-  const errorContainer2 = document.getElementById('error-messages');
-  errorContainer2.innerHTML = '';
-  errorContainer2.appendChild(errorList);
-  errorContainer2.style.display = 'block';
+  errorContainer.innerHTML = '';
+  errorContainer.appendChild(errorList);
+  errorContainer.style.display = 'block';
 }
 
 // Display general error message
@@ -168,15 +251,26 @@ function clearErrorMessages() {
 
 // Update player score display in UI
 function updatePlayerScoreDisplay(playerId, roundScore) {
-  const scoreElement = document.querySelector(`#score-player-${playerId}`);
+  // Try multiple possible selectors for score elements
+  const scoreElement = document.querySelector(`#score-player-${playerId}`) ||
+                      document.querySelector(`#player-${playerId}-score`) ||
+                      document.querySelector(`[data-player-id="${playerId}"][data-type="total-score"]`);
+  
   if (scoreElement) {
     const player = gameState.players.find(p => p.id === playerId);
-    const totalScore = player.scores.reduce((sum, score) => sum + score, 0);
-    scoreElement.textContent = totalScore;
+    if (player && player.scores) {
+      const totalScore = player.scores.reduce((sum, score) => sum + score, 0);
+      scoreElement.textContent = totalScore;
+    }
+  } else {
+    console.warn(`Score display element not found for player ${playerId}`);
   }
   
   // Update round score display if exists
-  const roundScoreElement = document.querySelector(`#round-score-player-${playerId}`);
+  const roundScoreElement = document.querySelector(`#round-score-player-${playerId}`) ||
+                           document.querySelector(`#player-${playerId}-round-score`) ||
+                           document.querySelector(`[data-player-id="${playerId}"][data-type="round-score"]`);
+  
   if (roundScoreElement) {
     roundScoreElement.textContent = roundScore;
   }
@@ -215,14 +309,19 @@ function updateHandCountDisplay() {
   }
 }
 
-// Calculate hand count based on round (placeholder logic)
+// Calculate hand count based on round
 function calculateHandCountForRound(round) {
-  // This would depend on the specific game rules
-  // Common pattern: start with 10, go down to 1, then back up
+  // Standard Oh Hell / Up and Down the River pattern
+  // Rounds 1-10: 10 cards down to 1 card
+  // Rounds 11-20: 1 card back up to 10 cards
   if (round <= 10) {
     return 11 - round;
-  } else {
+  } else if (round <= 20) {
     return round - 10;
+  } else {
+    // Extended game pattern if more than 20 rounds
+    const cycle = ((round - 1) % 20) + 1;
+    return calculateHandCountForRound(cycle);
   }
 }
 
@@ -263,12 +362,15 @@ function displayGameEndMessage(finalScores) {
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', initializeApp);
 
-// Export functions for testing
-export {
-  handleTrickSubmission,
-  extractFormData,
-  updatePlayerScores,
-  displayValidationErrors,
-  advanceToNextRound,
-  endGame
-};
+// Make functions available globally for testing (non-module approach)
+if (typeof window !== 'undefined') {
+  window.gameAppFunctions = {
+    handleTrickSubmission,
+    extractFormData,
+    updatePlayerScores,
+    displayValidationErrors,
+    advanceToNextRound,
+    endGame,
+    initializePlayersFromForm
+  };
+}
