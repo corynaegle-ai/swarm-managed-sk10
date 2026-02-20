@@ -2,7 +2,7 @@ import React from 'react';
 import { useGame } from '../../hooks/useGame';
 
 const GameComplete = () => {
-  const { gameState } = useGame();
+  const { gameState, updateGameState } = useGame();
   
   // Get final scores from game state
   const finalScores = gameState?.finalScores;
@@ -13,7 +13,7 @@ const GameComplete = () => {
       <div className="game-complete">
         <h1>Game Complete</h1>
         <p className="error-message">Error: No final scores available</p>
-        <button className="new-game-btn primary" onClick={() => window.location.reload()}>
+        <button className="new-game-btn primary" onClick={handleNewGame}>
           New Game
         </button>
       </div>
@@ -29,7 +29,16 @@ const GameComplete = () => {
 
   const handleNewGame = () => {
     // Reset game state and return to setup
-    window.location.reload(); // Simple reset for now
+    updateGameState({
+      gamePhase: 'setup',
+      players: [],
+      currentRound: 1,
+      currentTrick: [],
+      scores: {},
+      bids: {},
+      tricksWon: {},
+      finalScores: null
+    });
   };
 
   const handleExitGame = () => {

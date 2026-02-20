@@ -34,8 +34,11 @@ const SetupPhase = ({ onComplete }) => {
   const handleStartGame = () => {
     if (players.every(p => p.name.trim())) {
       setIsReady(true);
-      // Update game state with players before transitioning
-      updateGameState({ players });
+      // Update game state with players and set phase to bidding before transitioning
+      updateGameState({ 
+        players,
+        gamePhase: 'bidding'
+      });
       onComplete(players);
     }
   };
