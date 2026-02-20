@@ -56,10 +56,28 @@ class UIManager {
     }
     
     setupAutomaticScoreCalculation() {
-        // Poll for game state changes if events aren't available
-        setInterval(() => {
-            this.checkForGameUpdates();
-        }, 1000);
+        // Use event-driven approach instead of polling
+        // Fallback polling only if events fail
+        let eventWorking = false;
+        
+        const testEventListener = () => {
+            eventWorking = true;
+        };
+        
+        document.addEventListener('gameStateChanged', testEventListener, { once: true });
+        
+        // Test if events work by triggering one
+        setTimeout(() => {
+            if (!eventWorking) {
+                console.warn('Event system not working, falling back to polling');
+                // Reduced polling frequency for better performance
+                setInterval(() => {
+                    this.checkForGameUpdates();
+                }, 2000);
+            } else {
+                document.removeEventListener('gameStateChanged', testEventListener);
+            }
+        }, 500);
     }
     
     checkForGameUpdates() {
@@ -134,7 +152,10 @@ class UIManager {
             // Clear existing content
             this.scoreboardBody.innerHTML = '';
             
-            if (!players || players.length === 0) {
+            // Validate and sanitize players data
+            const validPlayers = this.validateAndSanitizePlayers(players);
+            
+            if (!validPlayers || validPlayers.length === 0) {
                 const emptyRow = document.createElement('tr');
                 emptyRow.innerHTML = '<td colspan="2" class="empty-state">No players added yet</td>';
                 this.scoreboardBody.appendChild(emptyRow);
@@ -146,7 +167,7 @@ class UIManager {
             this.showScoreSection();
             
             // Sort players by score (highest first)
-            const sortedPlayers = [...players].sort((a, b) => (b.score || b.totalScore || 0) - (a.score || a.totalScore || 0));
+            const sortedPlayers = [...validPlayers].sort((a, b) => (b.score || b.totalScore || 0) - (a.score || a.totalScore || 0));
             
             sortedPlayers.forEach((player, index) => {
                 const row = document.createElement('tr');
@@ -156,7 +177,7 @@ class UIManager {
                 const score = player.score || player.totalScore || 0;
                 
                 row.innerHTML = `
-                    <td class="player-name">${this.escapeHtml(player.name || 'Unknown Player')}</td>
+                    <td class="player-name">${this.escapeHtml(player.name)}</td>
                     <td class="player-score">${score}</td>
                 `;
                 
@@ -350,6 +371,29 @@ class UIManager {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+    
+    /**
+     * Validate and sanitize players data
+     * @param {Array} players - Players data to validate
+     * @returns {Array} Sanitized players array
+     */
+    validateAndSanitizePlayers(players) {
+        if (!Array.isArray(players)) {
+            return [];
+        }
+        
+        return players.filter(player => {
+            return player && 
+                   typeof player === 'object' && 
+                   (typeof player.name === 'string' || typeof player.playerName === 'string');
+        }).map(player => {
+            return {
+                name: player.name || player.playerName || 'Unknown Player',
+                score: typeof player.score === 'number' ? player.score : (typeof player.totalScore === 'number' ? player.totalScore : 0),
+                totalScore: typeof player.totalScore === 'number' ? player.totalScore : (typeof player.score === 'number' ? player.score : 0)
+            };
+        });
     }
     
     /**
