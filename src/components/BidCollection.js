@@ -1,130 +1,91 @@
 import React, { useState, useEffect } from 'react';
-import './BidCollection.css';
 
-const BidCollection = ({ players, currentHandCount, onBidsSubmitted }) => {
+const BidCollection = ({ players, currentHandCount, onBidsCollected }) => {
   const [bids, setBids] = useState({});
   const [errors, setErrors] = useState({});
-  const [showConfirmation, setShowConfirmation] = useState(false);
 
   useEffect(() => {
-    // Initialize bids object for all players
+    // Initialize bids object with null for each player
     const initialBids = {};
+    const initialErrors = {};
     players.forEach(player => {
-      initialBids[player.id] = '';
+      initialBids[player.id] = null;
+      initialErrors[player.id] = '';
     });
     setBids(initialBids);
+    setErrors(initialErrors);
   }, [players]);
 
-  const validateBid = (playerId, bidValue) => {
-    const bid = parseInt(bidValue);
-    
-    if (isNaN(bid) || bid < 0) {
-      return 'Bid must be a number between 0 and ' + currentHandCount;
+  const validateBid = (playerId, bid) => {
+    if (bid === null || bid === undefined || bid === '') {
+      return 'Bid is required.';
     }
-    
-    if (bid > currentHandCount) {
-      return 'Bid cannot exceed ' + currentHandCount + ' hands';
+    if (isNaN(bid) || bid < 0 || bid > currentHandCount) {
+      return `Bid must be a number between 0 and ${currentHandCount}.`;
     }
-    
-    return null;
+    return '';
   };
 
   const handleBidChange = (playerId, value) => {
-    const newBids = { ...bids, [playerId]: value };
-    setBids(newBids);
-    
-    // Clear error for this player if valid
-    const error = validateBid(playerId, value);
-    const newErrors = { ...errors };
-    if (error) {
-      newErrors[playerId] = error;
-    } else {
-      delete newErrors[playerId];
-    }
-    setErrors(newErrors);
+    const bid = value === '' ? null : parseInt(value, 10);
+    const error = validateBid(playerId, bid);
+    setBids(prev => ({ ...prev, [playerId]: bid }));
+    setErrors(prev => ({ ...prev, [playerId]: error }));
   };
 
   const areAllBidsValid = () => {
     return players.every(player => {
       const bid = bids[player.id];
-      return bid !== '' && validateBid(player.id, bid) === null;
+      const error = validateBid(player.id, bid);
+      return bid !== null && bid !== undefined && bid !== '' && !error;
     });
   };
 
-  const handleSubmitBids = () => {
-    if (areAllBidsValid()) {
-      setShowConfirmation(true);
+  const areAllBidsCollected = () => {
+    return players.every(player => bids[player.id] !== null && bids[player.id] !== undefined);
+  };
+
+  const handleSubmit = () => {
+    if (!areAllBidsCollected()) {
+      alert('All players must submit bids before proceeding.');
+      return;
     }
+    if (!areAllBidsValid()) {
+      alert('Please correct the errors before proceeding.');
+      return;
+    }
+    onBidsCollected(bids);
   };
-
-  const confirmBids = () => {
-    const playerRoundScores = players.map(player => ({
-      playerId: player.id,
-      playerName: player.name,
-      bid: parseInt(bids[player.id]),
-      tricks: 0,
-      score: 0
-    }));
-    
-    onBidsSubmitted(playerRoundScores);
-  };
-
-  const cancelConfirmation = () => {
-    setShowConfirmation(false);
-  };
-
-  if (showConfirmation) {
-    return (
-      <div className="bid-confirmation">
-        <h3>Confirm Bids</h3>
-        <div className="bid-summary">
-          {players.map(player => (
-            <div key={player.id} className="bid-summary-row">
-              <span className="player-name">{player.name}:</span>
-              <span className="bid-value">{bids[player.id]} tricks</span>
-            </div>
-          ))}
-        </div>
-        <div className="confirmation-buttons">
-          <button onClick={confirmBids} className="confirm-btn">Confirm Bids</button>
-          <button onClick={cancelConfirmation} className="cancel-btn">Back to Bidding</button>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="bid-collection">
-      <h3>Place Your Bids</h3>
-      <p>Current hand has {currentHandCount} tricks available</p>
-      
-      <div className="bid-inputs">
-        {players.map(player => (
-          <div key={player.id} className="bid-input-row">
-            <label className="player-label">{player.name}:</label>
-            <input
-              type="number"
-              min="0"
-              max={currentHandCount}
-              value={bids[player.id]}
-              onChange={(e) => handleBidChange(player.id, e.target.value)}
-              className={errors[player.id] ? 'error' : ''}
-              placeholder="Enter bid (0-" + currentHandCount + ")"
-            />
-            {errors[player.id] && (
-              <span className="error-message">{errors[player.id]}</span>
-            )}
-          </div>
-        ))}
-      </div>
-      
-      <button 
-        onClick={handleSubmitBids}
-        disabled={!areAllBidsValid()}
-        className="submit-bids-btn"
-      >
-        Submit All Bids
+    <div>
+      <h2>Collect Bids</h2>
+      {players.map(player => (
+        <div key={player.id}>
+          <label>{player.name}'s Bid (0 to {currentHandCount}): </label>
+          <input
+            type="number"
+            min="0"
+            max={currentHandCount}
+            value={bids[player.id] ?? ''}
+            onChange={(e) => handleBidChange(player.id, e.target.value)}
+          />
+          {errors[player.id] && <span style={{ color: 'red' }}>{errors[player.id]}</span>}
+        </div>
+      ))}
+      <button onClick={handleSubmit} disabled={!areAllBidsCollected() || !areAllBidsValid()}>
+        Confirm Bids
       </button>
+      {areAllBidsCollected() && (
+        <div>
+          <h3>Bid Confirmation</h3>
+          <ul>
+            {players.map(player => (
+              <li key={player.id}>{player.name}: {bids[player.id]}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
