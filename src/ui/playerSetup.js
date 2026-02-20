@@ -85,7 +85,7 @@ class PlayerSetupUI {
       <div class="player-item" data-player-id="${player.id}">
         <span class="player-name">${this.escapeHtml(player.name)}</span>
         <span class="player-score">Score: ${player.score}</span>
-        <button class="remove-player-btn" onclick="playerSetup.removePlayer('${player.id}')">
+        <button class="remove-player-btn" data-player-id="${player.id}">
           Remove
         </button>
       </div>
@@ -97,6 +97,15 @@ class PlayerSetupUI {
         ${playersHTML}
       </div>
     `;
+
+    // Add event listeners to remove buttons
+    const removeButtons = playersContainer.querySelectorAll('.remove-player-btn');
+    removeButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        const playerId = e.target.getAttribute('data-player-id');
+        this.removePlayer(playerId);
+      });
+    });
   }
 
   /**
