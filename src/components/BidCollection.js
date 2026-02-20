@@ -5,6 +5,7 @@ const BidCollection = ({ players, handCount, onBidsCollected }) => {
   const [bids, setBids] = useState({});
   const [errors, setErrors] = useState({});
   const [allBidsCollected, setAllBidsCollected] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
 
   const handleBidChange = (playerId, bid) => {
     const numBid = parseInt(bid, 10) || 0;
@@ -17,13 +18,22 @@ const BidCollection = ({ players, handCount, onBidsCollected }) => {
   };
 
   useEffect(() => {
-    const allBidsPresent = players.every(player => bids[player.id] !== undefined);
+    const allBidsPresent = players.every(player => {
+      const bid = bids[player.id];
+      return bid !== undefined && bid !== '' && bid >= 0 && bid <= handCount;
+    });
     const noErrors = Object.values(errors).every(err => !err);
     setAllBidsCollected(allBidsPresent && noErrors);
-  }, [bids, errors, players]);
+  }, [bids, errors, players, handCount]);
+
+  const handleConfirm = () => {
+    if (allBidsCollected) {
+      setConfirmed(true);
+    }
+  };
 
   const handleSubmit = () => {
-    if (allBidsCollected) {
+    if (confirmed) {
       onBidsCollected(bids);
     }
   };
@@ -44,7 +54,7 @@ const BidCollection = ({ players, handCount, onBidsCollected }) => {
           {errors[player.id] && <span className="error">{errors[player.id]}</span>}
         </div>
       ))}
-      {allBidsCollected && (
+      {allBidsCollected && !confirmed && (
         <div className="confirmation">
           <h3>Bid Confirmation</h3>
           <ul>
@@ -52,9 +62,22 @@ const BidCollection = ({ players, handCount, onBidsCollected }) => {
               <li key={player.id}>{player.name}: {bids[player.id]}</li>
             ))}
           </ul>
+          <button onClick={handleConfirm}>
+            Confirm Bids
+          </button>
         </div>
       )}
-      <button onClick={handleSubmit} disabled={!allBidsCollected}>
+      {confirmed && (
+        <div className="confirmation">
+          <h3>Bids Confirmed</h3>
+          <ul>
+            {players.map(player => (
+              <li key={player.id}>{player.name}: {bids[player.id]}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <button onClick={handleSubmit} disabled={!confirmed}>
         Proceed to Round
       </button>
     </div>
