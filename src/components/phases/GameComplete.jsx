@@ -4,8 +4,18 @@ import { useGame } from '../../hooks/useGame';
 const GameComplete = () => {
   const { gameState, updateGameState } = useGame();
   
-  // Get final scores from game state
-  const finalScores = gameState?.finalScores;
+  // Get final scores from game state, or calculate from current scores if not set
+  const finalScores = gameState?.finalScores || 
+    (gameState?.scores ? 
+      Object.entries(gameState.scores).reduce((acc, [playerId, score]) => {
+        const player = gameState.players?.find(p => p.id === parseInt(playerId));
+        acc[playerId] = {
+          name: player?.name || `Player ${playerId}`,
+          score: score
+        };
+        return acc;
+      }, {}) 
+      : null);
 
   // If no scores available, show error state
   if (!finalScores || Object.keys(finalScores).length === 0) {
