@@ -1,3 +1,6 @@
+// Import scoring functions
+import { validateTrickEntry, updatePlayerRoundScore, calculateRoundScore } from './scoring.js';
+
 // Main game controller
 class TricksterGame {
   constructor() {
@@ -181,13 +184,7 @@ class TricksterGame {
       
       // Validate trick entries using imported scoring function
       const handCount = this.calculateHandCountForRound(this.currentRound);
-      let validation;
-      
-      if (typeof validateTrickEntry === 'function') {
-        validation = validateTrickEntry(formData, handCount);
-      } else {
-        validation = this.validateTrickEntry(formData, handCount);
-      }
+      const validation = validateTrickEntry(formData, handCount);
       
       if (!validation.isValid) {
         this.showError(validation.error);
@@ -272,36 +269,7 @@ class TricksterGame {
     return extractionSuccessful ? playerTricks : null;
   }
 
-  validateTrickEntry(playerTricks, handCount) {
-    // Validate total actual tricks equals hand count
-    const totalActualTricks = playerTricks.reduce((sum, p) => sum + p.actual, 0);
-    
-    if (totalActualTricks !== handCount) {
-      return {
-        isValid: false,
-        error: `Total actual tricks (${totalActualTricks}) must equal hand count (${handCount})`
-      };
-    }
-    
-    // Validate individual player entries
-    for (let player of playerTricks) {
-      if (player.predicted < 0 || player.predicted > handCount) {
-        return {
-          isValid: false,
-          error: `${player.playerName}'s predicted tricks must be between 0 and ${handCount}`
-        };
-      }
-      
-      if (player.actual < 0 || player.actual > handCount) {
-        return {
-          isValid: false,
-          error: `${player.playerName}'s actual tricks must be between 0 and ${handCount}`
-        };
-      }
-    }
-    
-    return { isValid: true };
-  }
+
 
   updatePlayerScores(playerTricks) {
     playerTricks.forEach((trickData) => {
@@ -312,34 +280,19 @@ class TricksterGame {
       }
       
       // Calculate score using imported scoring functions
-      let roundScore;
+      const roundScore = calculateRoundScore(
+        trickData.predicted,
+        trickData.actual,
+        trickData.bonus
+      );
       
-      if (typeof updatePlayerRoundScore === 'function') {
-        // Use imported scoring function with correct signature
-        roundScore = updatePlayerRoundScore(
-          trickData.playerId,
-          trickData.actual,
-          trickData.bonus
-        );
-        
-        // Also calculate using the prediction for proper scoring
-        if (typeof calculateRoundScore === 'function') {
-          roundScore = calculateRoundScore(
-            trickData.predicted,
-            trickData.actual,
-            trickData.bonus
-          );
-        }
-      } else {
-        // Fallback to local calculation
-        roundScore = this.calculatePlayerScore(
-          trickData.predicted,
-          trickData.actual,
-          trickData.bonus
-        );
-      }
+      // Update player's round score using imported function
+      updatePlayerRoundScore(
+        trickData.playerId,
+        roundScore
+      );
       
-      // Update player's scores
+      // Update player's scores in our local state
       player.roundScores[this.currentRound - 1] = roundScore;
       player.totalScore = player.roundScores.reduce((sum, score) => sum + (score || 0), 0);
       
@@ -348,29 +301,7 @@ class TricksterGame {
     });
   }
 
-  calculatePlayerScore(predicted, actual, bonusEarned) {
-    // Use scoring logic from scoring.js if available, otherwise fallback
-    if (typeof window.calculateRoundScore === 'function') {
-      return window.calculateRoundScore(predicted, actual, bonusEarned);
-    }
-    
-    // Fallback scoring logic
-    let score = 0;
-    
-    if (predicted === actual) {
-      // Correct prediction: 10 points + actual tricks
-      score = 10 + actual;
-      
-      if (bonusEarned) {
-        score += 5; // Bonus points
-      }
-    } else {
-      // Incorrect prediction: negative points for difference
-      score = -(Math.abs(predicted - actual));
-    }
-    
-    return score;
-  }
+
 
   updatePlayerScoreDisplay(player) {
     // Try multiple selector patterns for score display
@@ -452,21 +383,40 @@ class TricksterGame {
     // Sort players by score (descending)
     const sortedPlayers = [...this.players].sort((a, b) => b.totalScore - a.totalScore);
     
-    let html = `<h3>🏆 ${winner.name} Wins with ${winner.totalScore} points!</h3><div class="final-scoreboard">`;
+    // Clear container and build elements safely
+    container.innerHTML = '';
+    
+    const title = document.createElement('h3');
+    title.textContent = `🏆 ${winner.name} Wins with ${winner.totalScore} points!`;
+    container.appendChild(title);
+    
+    const scoreboard = document.createElement('div');
+    scoreboard.className = 'final-scoreboard';
     
     sortedPlayers.forEach((player, index) => {
       const position = index + 1;
-      html += `
-        <div class="final-score-row ${player.id === winner.id ? 'winner' : ''}">
-          <span class="position">${position}.</span>
-          <span class="name">${player.name}</span>
-          <span class="total-score">${player.totalScore}</span>
-        </div>
-      `;
+      const row = document.createElement('div');
+      row.className = `final-score-row ${player.id === winner.id ? 'winner' : ''}`;
+      
+      const positionSpan = document.createElement('span');
+      positionSpan.className = 'position';
+      positionSpan.textContent = `${position}.`;
+      
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'name';
+      nameSpan.textContent = player.name;
+      
+      const scoreSpan = document.createElement('span');
+      scoreSpan.className = 'total-score';
+      scoreSpan.textContent = player.totalScore;
+      
+      row.appendChild(positionSpan);
+      row.appendChild(nameSpan);
+      row.appendChild(scoreSpan);
+      scoreboard.appendChild(row);
     });
     
-    html += '</div>';
-    container.innerHTML = html;
+    container.appendChild(scoreboard);
   }
 
   clearForm() {
