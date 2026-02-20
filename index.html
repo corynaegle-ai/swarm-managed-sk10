@@ -12,9 +12,19 @@
             <h1>Vanilla JS Application</h1>
         </header>
         <main>
-            <p>Welcome to your new application!</p>
+            <div id="player-setup-container"></div>
+            <div id="player-list-container"></div>
+            <button type="button" id="start-game-btn" disabled>Need 2 more players</button>
         </main>
     </div>
+    <script src="js/player-manager.js"></script>
+    <script src="js/ui-components.js"></script>
     <script src="app.js"></script>
+    <script>
+        // Initialize player UI when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePlayerUI();
+        });
+    </script>
 </body>
 </html>
