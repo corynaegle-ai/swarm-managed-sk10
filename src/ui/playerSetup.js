@@ -82,10 +82,10 @@ class PlayerSetupUI {
     }
 
     const playersHTML = players.map(player => `
-      <div class="player-item" data-player-id="${player.id}">
+      <div class="player-item" data-player-id="${this.escapeHtml(player.id)}">
         <span class="player-name">${this.escapeHtml(player.name)}</span>
         <span class="player-score">Score: ${player.score}</span>
-        <button class="remove-player-btn" data-player-id="${player.id}">
+        <button class="remove-player-btn" data-player-id="${this.escapeHtml(player.id)}">
           Remove
         </button>
       </div>
