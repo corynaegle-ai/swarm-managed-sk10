@@ -1,0 +1,554 @@
+/* ========================================
+   Bid Collection Interface Styles
+   ======================================== */
+
+/* Base Container */
+.bid-collection-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* Header Section */
+.bid-collection-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.bid-collection-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.bid-collection-subtitle {
+  font-size: 1.1rem;
+  color: #6c757d;
+  margin: 0;
+}
+
+/* Bid Input Form */
+.bid-form {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bid-form-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Player Bid Sections */
+.player-bid-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.player-bid-section:focus-within {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.player-bid-section.error {
+  border-color: #dc3545;
+  background-color: #fff5f5;
+}
+
+.player-label {
+  display: block;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #495057;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+}
+
+.player-label.required::after {
+  content: ' *';
+  color: #dc3545;
+}
+
+/* Bid Input Fields */
+.bid-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #ced4da;
+  border-radius: 6px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background-color: white;
+  box-sizing: border-box;
+}
+
+.bid-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.bid-input.invalid {
+  border-color: #dc3545;
+  background-color: #fff5f5;
+}
+
+.bid-input.invalid:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Input Field Sizing */
+.bid-input[type="number"] {
+  min-width: 120px;
+  max-width: 200px;
+}
+
+.bid-input[type="text"] {
+  min-width: 200px;
+}
+
+/* Validation Error Messages */
+.error-message {
+  display: block;
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+.error-icon {
+  display: inline-block;
+  margin-right: 0.25rem;
+  font-weight: bold;
+}
+
+/* Success States */
+.bid-input.valid {
+  border-color: #28a745;
+  background-color: #f8fff9;
+}
+
+.success-message {
+  display: block;
+  color: #28a745;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+/* Form Actions */
+.form-actions {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.submit-button {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.submit-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
+}
+
+.submit-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.submit-button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Bid Confirmation Summary */
+.bid-summary {
+  background: white;
+  border: 2px solid #28a745;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-top: 2rem;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15);
+}
+
+.summary-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #28a745;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.summary-title::before {
+  content: '✓';
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-item {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.summary-player {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.25rem;
+}
+
+.summary-bid {
+  font-size: 1.2rem;
+  color: #007bff;
+  font-weight: 700;
+}
+
+.summary-total {
+  background: #e8f5e8;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  border: 2px solid #28a745;
+}
+
+.summary-total-label {
+  font-size: 1rem;
+  color: #495057;
+  margin-bottom: 0.25rem;
+}
+
+.summary-total-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #28a745;
+}
+
+/* Helper Text */
+.helper-text {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+/* Loading States */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+  position: relative;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+/* Mobile Devices (up to 767px) */
+@media (max-width: 767px) {
+  .bid-collection-container {
+    padding: 1rem;
+  }
+  
+  .bid-collection-title {
+    font-size: 1.5rem;
+  }
+  
+  .bid-form {
+    padding: 1.5rem 1rem;
+  }
+  
+  .player-bid-section {
+    padding: 0.75rem;
+  }
+  
+  .bid-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .submit-button {
+    width: 100%;
+    padding: 1rem;
+  }
+}
+
+/* Tablet Devices (768px to 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .bid-collection-container {
+    padding: 1.5rem;
+  }
+  
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop Devices (1024px and up) */
+@media (min-width: 1024px) {
+  .bid-form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+  
+  .bid-form-title {
+    grid-column: 1 / -1;
+  }
+  
+  .form-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ========================================
+   Accessibility Enhancements
+   ======================================== */
+
+/* Focus Management */
+.bid-input:focus,
+.submit-button:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .bid-form {
+    border: 2px solid #000;
+  }
+  
+  .player-bid-section {
+    border-color: #000;
+  }
+  
+  .bid-input {
+    border-color: #000;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .bid-collection-container {
+    max-width: none;
+    padding: 0;
+  }
+  
+  .submit-button {
+    display: none;
+  }
+  
+  .bid-form,
+  .bid-summary {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+}
+
+/* ========================================
+   Visual Hierarchy & Typography
+   ======================================== */
+
+/* Clear visual hierarchy with consistent spacing */
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+/* Improved readability with proper line height */
+p, div, span {
+  line-height: 1.6;
+}
+
+/* Consistent margins for form elements */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+/* ========================================
+   Animation and Transitions
+   ======================================== */
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Error state animation */
+.shake {
+  animation: shake 0.6s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-3px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(3px);
+  }
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.mb-1 {
+  margin-bottom: 0.5rem;
+}
+
+.mb-2 {
+  margin-bottom: 1rem;
+}
+
+.mb-3 {
+  margin-bottom: 1.5rem;
+}
+
+.mt-1 {
+  margin-top: 0.5rem;
+}
+
+.mt-2 {
+  margin-top: 1rem;
+}
+
+.mt-3 {
+  margin-top: 1.5rem;
+}
+
+.hidden {
+  display: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
