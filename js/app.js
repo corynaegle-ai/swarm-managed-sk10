@@ -1,80 +1,60 @@
 // Import necessary modules
-import Round from './round.js';
-import { initializeGame, handlePlayerAction, scoreRound } from './gameLogic.js'; // Assuming existing game logic
-import { updateDOM } from './domUtils.js'; // Assuming DOM utilities
+import { initializeGame, playCard, scoreRound } from './game.js';
+import { Round } from './round.js';
 
-// Global game state
 let gameState = {
-  currentRound: null,
   isGameActive: true,
-  // Other existing state properties
+  currentRound: null,
+  // Other game state properties
 };
 
-// Initialize the game
 function initGame() {
   try {
+    initializeGame(game);
     gameState.currentRound = new Round(1); // Start with round 1
-    initializeGame(gameState);
-    updateRoundDisplay();
+    updateRoundDisplay(); // Update DOM for initial round
   } catch (error) {
     console.error('Error initializing game:', error);
   }
 }
 
-// Update DOM to show current round info
-function updateRoundDisplay() {
-  const roundElement = document.querySelector('#current-round');
-  const handsElement = document.querySelector('#hands-count');
-  if (roundElement && gameState.currentRound) {
-    roundElement.textContent = `Round: ${gameState.currentRound.number}`;
-  }
-  if (handsElement && gameState.currentRound) {
-    handsElement.textContent = `Hands: ${gameState.currentRound.handsCount}`; // Assuming Round has handsCount
-  }
-}
-
-// Main game loop (assuming called periodically or on events)
 function gameLoop() {
   if (!gameState.isGameActive) return;
-
-  // Existing game logic
-  handlePlayerAction(gameState);
-
-  // After scoring phase, advance round
-  if (gameState.needsScoring) { // Assuming a flag for scoring phase
-    scoreRound(gameState);
-    advanceRound();
-  }
-
-  updateDOM(gameState); // Existing DOM updates
+  // Existing game loop logic
+  // Assume playCard and other functions are called here
 }
 
-// Advance to the next round
+function handleScoringPhase() {
+  // After scoring phase
+  scoreRound(gameState.currentRound);
+  advanceRound();
+}
+
 function advanceRound() {
   if (gameState.currentRound.number < 10) {
     gameState.currentRound = new Round(gameState.currentRound.number + 1);
     updateRoundDisplay();
-  } else if (gameState.currentRound.number === 10) {
+  } else {
     endGame();
   }
 }
 
-// End the game
-function endGame() {
-  gameState.isGameActive = false;
-  // Trigger game end sequence, e.g., show final scores
-  const endElement = document.querySelector('#game-end');
-  if (endElement) {
-    endElement.textContent = 'Game Over! Final Scores: ...'; // Customize as needed
+function updateRoundDisplay() {
+  const roundElement = document.querySelector('#round-number');
+  const handsElement = document.querySelector('#hands-count');
+  if (roundElement) {
+    roundElement.textContent = `Round: ${gameState.currentRound.number}`;
   }
-  // Additional end game logic
+  if (handsElement) {
+    handsElement.textContent = `Hands: ${gameState.currentRound.hands}`; // Assuming Round has a hands property
+  }
 }
 
-// Event listeners or other integrations
-// Assuming existing event setup, add round-specific listeners if needed
+function endGame() {
+  gameState.isGameActive = false;
+  // Existing end game logic
+  alert('Game Over!');
+}
 
-// Start the game
-initGame();
-
-// Example: Call gameLoop on some event or interval
-// setInterval(gameLoop, 1000); // Adjust as per game needs
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initGame);
