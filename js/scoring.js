@@ -1,4 +1,91 @@
 /**
+ * Calculate the base score for a round based on bid and actual tricks
+ * @param {number} bid - The number of tricks bid by the player
+ * @param {number} actualTricks - The actual number of tricks won
+ * @param {number} handCount - The current hand/round number
+ * @returns {number} The calculated score for the round
+ */
+export function calculateRoundScore(bid, actualTricks, handCount) {
+    // Input validation
+    if (typeof bid !== 'number' || typeof actualTricks !== 'number' || typeof handCount !== 'number') {
+        throw new Error('All parameters must be numbers');
+    }
+    
+    if (bid < 0 || actualTricks < 0 || handCount < 1) {
+        throw new Error('Invalid parameter values: bid and actualTricks must be >= 0, handCount must be >= 1');
+    }
+    
+    if (!Number.isInteger(bid) || !Number.isInteger(actualTricks) || !Number.isInteger(handCount)) {
+        throw new Error('All parameters must be integers');
+    }
+    
+    // Zero bid scoring
+    if (bid === 0) {
+        if (actualTricks === 0) {
+            // Zero bid correct: +10 × hand count
+            return 10 * handCount;
+        } else {
+            // Zero bid incorrect: -10 × hand count
+            return -10 * handCount;
+        }
+    }
+    
+    // Non-zero bid scoring
+    if (bid === actualTricks) {
+        // Correct bid 1+: +20 per trick
+        return 20 * actualTricks;
+    } else {
+        // Incorrect bid 1+: -10 per trick difference
+        const difference = Math.abs(bid - actualTricks);
+        return -10 * difference;
+    }
+}
+
+/**
+ * Calculate bonus points for special cards/combinations
+ * Bonus points are only awarded when the bid was correct
+ * @param {Array} cards - Array of card objects played during the round
+ * @param {number} bid - The number of tricks bid by the player
+ * @param {number} actualTricks - The actual number of tricks won
+ * @returns {number} The bonus points earned (0 if bid was incorrect)
+ */
+export function calculateBonusPoints(cards, bid, actualTricks) {
+    // Input validation
+    if (!Array.isArray(cards)) {
+        throw new Error('cards must be an array');
+    }
+    
+    if (typeof bid !== 'number' || typeof actualTricks !== 'number') {
+        throw new Error('bid and actualTricks must be numbers');
+    }
+    
+    // Bonus points only awarded when bid was correct
+    if (bid !== actualTricks) {
+        return 0;
+    }
+    
+    let bonusPoints = 0;
+    
+    // Calculate bonuses based on cards played
+    // This is a placeholder for future bonus logic implementation
+    // Common Skull King bonuses include:
+    // - Capturing pirates with the Skull King
+    // - Capturing the Skull King with a mermaid
+    // - Playing 14s (Tigress cards)
+    // The specific bonus rules would be implemented here
+    
+    for (const card of cards) {
+        if (card && typeof card === 'object') {
+            // Bonus logic would go here based on card properties
+            // Example structure (not implemented as rules not specified in ticket):
+            // if (card.type === 'skullKing' && card.capturedPirate) bonusPoints += 30;
+            // if (card.type === 'mermaid' && card.capturedSkullKing) bonusPoints += 50;
+        }
+    }
+    
+    return bonusPoints;
+}
+/**
  * Skull King Scoring Engine
  * Implements core scoring logic for the Skull King card game
  */
