@@ -1,0 +1,212 @@
+/* Trick Entry UI Styles */
+
+.trick-entry-panel {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.trick-entry-panel h3 {
+    margin-top: 0;
+    color: #333;
+    text-align: center;
+}
+
+.round-info {
+    display: flex;
+    justify-content: space-between;
+    background: #f5f5f5;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.player-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.player-entry {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 15px;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #fafafa;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.player-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.player-bid {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.tricks-entry, .bonus-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.tricks-entry label, .bonus-entry label {
+    font-weight: bold;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.tricks-select, .bonus-input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 16px;
+}
+
+.tricks-select:focus, .bonus-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 3px rgba(0, 123, 255, 0.3);
+}
+
+.bonus-input:disabled {
+    background: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.bid-status {
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 3px;
+    text-align: center;
+    min-width: 100px;
+}
+
+.bid-status.bid-met {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.bid-status.bid-not-met {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.entry-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding: 20px 0;
+    border-top: 1px solid #eee;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #545b62;
+}
+
+.btn-outline {
+    background: transparent;
+    color: #6c757d;
+    border: 1px solid #6c757d;
+}
+
+.btn-outline:hover {
+    background: #6c757d;
+    color: white;
+}
+
+.messages {
+    margin-top: 15px;
+}
+
+.message {
+    padding: 12px 15px;
+    border-radius: 5px;
+    margin: 5px 0;
+}
+
+.message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .player-entry {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    
+    .round-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 5px;
+    }
+    
+    .entry-controls {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn {
+        width: 200px;
+    }
+}
