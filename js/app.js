@@ -12,19 +12,23 @@ let gameState = {
 
 // Initialize the game
 function initGame() {
-  gameState.currentRound = new Round(1); // Start with round 1
-  initializeGame(gameState);
-  updateRoundDisplay();
+  try {
+    gameState.currentRound = new Round(1); // Start with round 1
+    initializeGame(gameState);
+    updateRoundDisplay();
+  } catch (error) {
+    console.error('Error initializing game:', error);
+  }
 }
 
 // Update DOM to show current round info
 function updateRoundDisplay() {
   const roundElement = document.querySelector('#current-round');
   const handsElement = document.querySelector('#hands-count');
-  if (roundElement) {
+  if (roundElement && gameState.currentRound) {
     roundElement.textContent = `Round: ${gameState.currentRound.number}`;
   }
-  if (handsElement) {
+  if (handsElement && gameState.currentRound) {
     handsElement.textContent = `Hands: ${gameState.currentRound.handsCount}`; // Assuming Round has handsCount
   }
 }
@@ -42,11 +46,6 @@ function gameLoop() {
     advanceRound();
   }
 
-  // Trigger game end after round 10
-  if (gameState.currentRound.number > 10) {
-    endGame();
-  }
-
   updateDOM(gameState); // Existing DOM updates
 }
 
@@ -55,6 +54,8 @@ function advanceRound() {
   if (gameState.currentRound.number < 10) {
     gameState.currentRound = new Round(gameState.currentRound.number + 1);
     updateRoundDisplay();
+  } else if (gameState.currentRound.number === 10) {
+    endGame();
   }
 }
 
