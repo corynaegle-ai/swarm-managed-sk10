@@ -1,21 +1,26 @@
-export class PlayerRoundScore {
-  constructor(player, bid, tricksWon = 0) {
-    this.player = player;
+class PlayerRoundScore {
+  constructor(playerId, playerName, bid) {
+    this.playerId = playerId;
+    this.playerName = playerName;
     this.bid = bid;
-    this.tricksWon = tricksWon;
+    this.tricksWon = 0;
   }
 
-  // Method to calculate score, e.g., based on bid and tricks won
-  calculateScore() {
-    // Example logic: score = 10 if bid === tricksWon, else -10 per difference
-    if (this.bid === this.tricksWon) {
-      return 10;
+  setTricksWon(tricks) {
+    this.tricksWon = tricks;
+  }
+
+  static validateBidLimit(bid, handCount) {
+    return bid >= 0 && bid <= handCount;
+  }
+
+  getScore() {
+    if (this.tricksWon === this.bid) {
+      return 10 + this.bid;
+    } else {
+      return Math.abs(this.tricksWon - this.bid) * -1;
     }
-    return -10 * Math.abs(this.bid - this.tricksWon);
-  }
-
-  // Validate bid
-  validateBid(maxHands) {
-    return this.bid >= 0 && this.bid <= maxHands;
   }
 }
+
+export { PlayerRoundScore };

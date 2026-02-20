@@ -1,83 +1,51 @@
 import React, { useState, useEffect } from 'react';
+import './BidCollection.css';
 
-const BidCollection = ({ players, currentHandCount, onBidsCollected }) => {
+const BidCollection = ({ players, handCount, onBidsCollected }) => {
   const [bids, setBids] = useState({});
   const [errors, setErrors] = useState({});
+  const [allBidsCollected, setAllBidsCollected] = useState(false);
+
+  const handleBidChange = (playerId, bid) => {
+    const numBid = parseInt(bid, 10) || 0;
+    if (numBid < 0 || numBid > handCount) {
+      setErrors(prev => ({ ...prev, [playerId]: `Bid must be between 0 and ${handCount}` }));
+    } else {
+      setErrors(prev => ({ ...prev, [playerId]: null }));
+    }
+    setBids(prev => ({ ...prev, [playerId]: numBid }));
+  };
 
   useEffect(() => {
-    // Initialize bids object with null for each player
-    const initialBids = {};
-    const initialErrors = {};
-    players.forEach(player => {
-      initialBids[player.id] = null;
-      initialErrors[player.id] = '';
-    });
-    setBids(initialBids);
-    setErrors(initialErrors);
-  }, [players]);
-
-  const validateBid = (playerId, bid) => {
-    if (bid === null || bid === undefined || bid === '') {
-      return 'Bid is required.';
-    }
-    if (isNaN(bid) || bid < 0 || bid > currentHandCount) {
-      return `Bid must be a number between 0 and ${currentHandCount}.`;
-    }
-    return '';
-  };
-
-  const handleBidChange = (playerId, value) => {
-    const bid = value === '' ? null : parseInt(value, 10);
-    const error = validateBid(playerId, bid);
-    setBids(prev => ({ ...prev, [playerId]: bid }));
-    setErrors(prev => ({ ...prev, [playerId]: error }));
-  };
-
-  const areAllBidsValid = () => {
-    return players.every(player => {
-      const bid = bids[player.id];
-      const error = validateBid(player.id, bid);
-      return bid !== null && bid !== undefined && bid !== '' && !error;
-    });
-  };
-
-  const areAllBidsCollected = () => {
-    return players.every(player => bids[player.id] !== null && bids[player.id] !== undefined);
-  };
+    const allBidsPresent = players.every(player => bids[player.id] !== undefined);
+    const noErrors = Object.values(errors).every(err => !err);
+    setAllBidsCollected(allBidsPresent && noErrors);
+  }, [bids, errors, players]);
 
   const handleSubmit = () => {
-    if (!areAllBidsCollected()) {
-      alert('All players must submit bids before proceeding.');
-      return;
+    if (allBidsCollected) {
+      onBidsCollected(bids);
     }
-    if (!areAllBidsValid()) {
-      alert('Please correct the errors before proceeding.');
-      return;
-    }
-    onBidsCollected(bids);
   };
 
   return (
-    <div>
+    <div className="bid-collection">
       <h2>Collect Bids</h2>
       {players.map(player => (
-        <div key={player.id}>
-          <label>{player.name}'s Bid (0 to {currentHandCount}): </label>
+        <div key={player.id} className="bid-input">
+          <label>{player.name}: </label>
           <input
             type="number"
             min="0"
-            max={currentHandCount}
-            value={bids[player.id] ?? ''}
+            max={handCount}
+            value={bids[player.id] || ''}
             onChange={(e) => handleBidChange(player.id, e.target.value)}
           />
-          {errors[player.id] && <span style={{ color: 'red' }}>{errors[player.id]}</span>}
+          {errors[player.id] && <span className="error">{errors[player.id]}</span>}
         </div>
       ))}
-      <button onClick={handleSubmit} disabled={!areAllBidsCollected() || !areAllBidsValid()}>
-        Confirm Bids
-      </button>
-      {areAllBidsCollected() && (
-        <div>
+      {allBidsCollected && (
+        <div className="confirmation">
           <h3>Bid Confirmation</h3>
           <ul>
             {players.map(player => (
@@ -86,6 +54,9 @@ const BidCollection = ({ players, currentHandCount, onBidsCollected }) => {
           </ul>
         </div>
       )}
+      <button onClick={handleSubmit} disabled={!allBidsCollected}>
+        Proceed to Round
+      </button>
     </div>
   );
 };

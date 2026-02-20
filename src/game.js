@@ -1,31 +1,20 @@
-// game.js
-// Main game logic
+import { PlayerRoundScore } from './models/PlayerRoundScore.js';
 
-export const players = [
-  { id: 1, name: 'Player 1' },
-  { id: 2, name: 'Player 2' },
-  { id: 3, name: 'Player 3' },
-  { id: 4, name: 'Player 4' }
-];
-
-export class Game {
-  constructor() {
-    this.currentRound = 1;
-    this.currentHandCount = 1;
-    this.playerRoundScores = [];
-  }
-
-  startRound() {
-    // Logic to start a round, perhaps initialize scores
-    this.playerRoundScores = [];
+class Game {
+  constructor(players) {
+    this.players = players;
+    this.roundNumber = 1;
+    this.roundScores = [];
   }
 
   collectBids(bids) {
-    // Create PlayerRoundScore objects
-    this.playerRoundScores = players.map(player => new PlayerRoundScore(player, bids[player.id], 0));
+    this.roundScores = this.players.map(player => new PlayerRoundScore(player.id, player.name, bids[player.id]));
   }
 
-  // Other game logic methods can be added here
+  startRound() {
+    // Logic to start the round after bids are collected
+    console.log('Round started with bids:', this.roundScores);
+  }
 }
 
-import { PlayerRoundScore } from './models/PlayerRoundScore.js';
+export default Game;
