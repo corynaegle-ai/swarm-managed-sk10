@@ -1,5 +1,8 @@
 class PlayerRoundScore {
-  constructor(playerId, playerName, bid) {
+  constructor(playerId, playerName, bid, handCount) {
+    if (!PlayerRoundScore.validateBidLimit(bid, handCount)) {
+      throw new Error(`Invalid bid: ${bid}. Bid must be between 0 and ${handCount}`);
+    }
     this.playerId = playerId;
     this.playerName = playerName;
     this.bid = bid;

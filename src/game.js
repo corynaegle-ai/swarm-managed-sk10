@@ -5,10 +5,14 @@ class Game {
     this.players = players;
     this.roundNumber = 1;
     this.roundScores = [];
+    this.handCount = 0;
   }
 
-  collectBids(bids) {
-    this.roundScores = this.players.map(player => new PlayerRoundScore(player.id, player.name, bids[player.id]));
+  collectBids(bids, handCount) {
+    this.handCount = handCount;
+    this.roundScores = this.players.map(player => 
+      new PlayerRoundScore(player.id, player.name, bids[player.id], handCount)
+    );
   }
 
   startRound() {
