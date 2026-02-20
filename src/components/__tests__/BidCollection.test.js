@@ -1,6 +1,9 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
+
+// Jest is automatically available in the test environment
+// @testing-library/jest-dom extends Jest matchers
 import BidCollection from '../BidCollection';
 
 const mockPlayers = [
