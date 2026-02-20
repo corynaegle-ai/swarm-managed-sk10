@@ -7,12 +7,17 @@ const BiddingPhase = ({ round, onComplete }) => {
   const [currentBidder, setCurrentBidder] = useState(0);
   const [allBidsComplete, setAllBidsComplete] = useState(false);
 
-  const players = gameState?.players || [
-    { id: 1, name: 'Player 1' },
-    { id: 2, name: 'Player 2' },
-    { id: 3, name: 'Player 3' },
-    { id: 4, name: 'Player 4' }
-  ];
+  const players = gameState?.players || [];
+
+  // Safety check: if no players in game state, we can't proceed
+  if (players.length === 0) {
+    return (
+      <div className="bidding-phase">
+        <h2>Error: No players configured</h2>
+        <p>Please return to setup and configure players.</p>
+      </div>
+    );
+  }
 
   useEffect(() => {
     const completedBids = Object.keys(bids).length;

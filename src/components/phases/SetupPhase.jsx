@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useGame } from '../../hooks/useGame';
 
 const SetupPhase = ({ onComplete }) => {
+  const { updateGameState } = useGame();
   const [players, setPlayers] = useState([
     { id: 1, name: 'Player 1', isHuman: true },
     { id: 2, name: 'Player 2', isHuman: false },
@@ -32,6 +34,8 @@ const SetupPhase = ({ onComplete }) => {
   const handleStartGame = () => {
     if (players.every(p => p.name.trim())) {
       setIsReady(true);
+      // Update game state with players before transitioning
+      updateGameState({ players });
       onComplete(players);
     }
   };
