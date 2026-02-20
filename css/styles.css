@@ -1,4 +1,7 @@
 /* Trickster Game Styles */
+/* Note: This file consolidates bid-collection.css, phases.css, and scoreboard.css
+   into a single stylesheet for better maintainability and reduced HTTP requests.
+   All previous styles have been preserved and organized by component. */
 
 * {
   box-sizing: border-box;
