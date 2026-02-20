@@ -1,59 +1,84 @@
-let gameState = {
-  phase: 'setup',
-  round: 1
-};
+import { currentPhase, round } from './gameState.js';
+import {} from './gameFlow.js'; // Imported for potential future use, minimal stub
 
+// Function to initialize game flow
 function initGameFlow() {
-  gameState.phase = 'setup';
+  currentPhase = 'setup';
   transitionPhase('setup');
 }
 
+// Function to transition to a new phase
 function transitionPhase(newPhase) {
-  gameState.phase = newPhase;
-
   // Hide all phase containers
-  document.querySelectorAll('.phase-container').forEach(el => {
-    el.classList.remove('phase-visible');
-    el.classList.add('phase-hidden');
+  document.querySelectorAll('.phase-container').forEach(container => {
+    container.classList.add('phase-hidden');
+    container.classList.remove('phase-visible');
   });
-
-  // Show the container for newPhase
-  const container = document.getElementById(`${newPhase}-phase`);
-  if (container) {
-    container.classList.remove('phase-hidden');
-    container.classList.add('phase-visible');
+  
+  // Show the container for the new phase
+  const phaseContainer = document.querySelector(`#${newPhase}-container`);
+  if (phaseContainer) {
+    phaseContainer.classList.remove('phase-hidden');
+    phaseContainer.classList.add('phase-visible');
+  } else {
+    console.error(`Phase container #${newPhase}-container not found`);
   }
-
-  // Update phase indicator text
-  const indicator = document.querySelector('.phase-indicator');
-  if (indicator) {
-    indicator.textContent = newPhase;
+  
+  // Update phase indicator
+  const phaseIndicator = document.querySelector('.phase-indicator');
+  if (phaseIndicator) {
+    phaseIndicator.textContent = newPhase;
   }
-
-  // Enable/disable buttons appropriate to the phase
-  document.getElementById('start-bidding-btn').disabled = newPhase !== 'setup';
-  document.getElementById('submit-bids-btn').disabled = newPhase !== 'bidding';
-  document.getElementById('next-round-btn').disabled = newPhase !== 'resolution';
+  
+  // Enable/disable buttons based on phase
+  // Assuming buttons exist; add specific logic if needed
+  const startBiddingBtn = document.querySelector('#start-bidding-btn');
+  const submitBidsBtn = document.querySelector('#submit-bids-btn');
+  const nextRoundBtn = document.querySelector('#next-round-btn');
+  
+  if (startBiddingBtn) startBiddingBtn.disabled = newPhase !== 'setup';
+  if (submitBidsBtn) submitBidsBtn.disabled = newPhase !== 'bidding';
+  if (nextRoundBtn) nextRoundBtn.disabled = newPhase !== 'resolution';
+  
+  currentPhase = newPhase;
 }
 
+// Event listeners
 document.addEventListener('DOMContentLoaded', () => {
+  // Integrate with existing initialization (assume minimal)
   initGameFlow();
-
-  // Hook into start-game-btn (add to existing handler if present)
-  const startGameBtn = document.getElementById('start-game-btn');
+  
+  // Add to existing start-game-btn handler (assume it exists)
+  const startGameBtn = document.querySelector('#start-game-btn');
   if (startGameBtn) {
-    startGameBtn.addEventListener('click', () => transitionPhase('bidding'));
-  }
-
-  // Add event listeners for other buttons
-  document.getElementById('start-bidding-btn').addEventListener('click', () => transitionPhase('bidding'));
-  document.getElementById('submit-bids-btn').addEventListener('click', () => transitionPhase('resolution'));
-  document.getElementById('next-round-btn').addEventListener('click', () => {
-    gameState.round++;
-    if (gameState.round > 10) {
-      transitionPhase('completion');
-    } else {
+    startGameBtn.addEventListener('click', () => {
       transitionPhase('bidding');
-    }
-  });
+    });
+  }
+  
+  const startBiddingBtn = document.querySelector('#start-bidding-btn');
+  if (startBiddingBtn) {
+    startBiddingBtn.addEventListener('click', () => {
+      transitionPhase('bidding');
+    });
+  }
+  
+  const submitBidsBtn = document.querySelector('#submit-bids-btn');
+  if (submitBidsBtn) {
+    submitBidsBtn.addEventListener('click', () => {
+      transitionPhase('resolution');
+    });
+  }
+  
+  const nextRoundBtn = document.querySelector('#next-round-btn');
+  if (nextRoundBtn) {
+    nextRoundBtn.addEventListener('click', () => {
+      round++;
+      if (round > 10) {
+        transitionPhase('completion');
+      } else {
+        transitionPhase('bidding');
+      }
+    });
+  }
 });

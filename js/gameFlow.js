@@ -1,2 +1,2 @@
-// Minimal stub module
-export const gameFlowStub = {};
+// Minimal stub for gameFlow.js
+// No functions exported yet, as per minimal requirements
