@@ -87,10 +87,32 @@ h2 {
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
   display: inline-block;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .btn-primary {
@@ -104,11 +126,14 @@ h2 {
   box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
 }
 
-.btn-primary:disabled {
+.btn-primary:disabled,
+.btn-primary.disabled {
   background-color: #bdc3c7;
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+  pointer-events: none;
 }
 
 .btn-danger {
@@ -121,6 +146,15 @@ h2 {
 .btn-danger:hover {
   background-color: #c0392b;
   transform: translateY(-1px);
+}
+
+.btn-danger:disabled,
+.btn-danger.disabled {
+  background-color: #bdc3c7;
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  pointer-events: none;
 }
 
 .btn-success {
@@ -136,11 +170,14 @@ h2 {
   box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
 }
 
-.btn-success:disabled {
+.btn-success:disabled,
+.btn-success.disabled {
   background-color: #95a5a6;
+  opacity: 0.5;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+  pointer-events: none;
 }
 
 /* Player List Styles */
@@ -149,6 +186,16 @@ h2 {
   border-radius: 10px;
   padding: 30px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.no-players {
+  text-align: center;
+  color: #7f8c8d;
+  font-style: italic;
+  padding: 40px 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #e9ecef;
 }
 
 .players-grid {
@@ -254,9 +301,9 @@ h2 {
   font-weight: 600;
 }
 
-/* Transition Animations */
+/* Smooth Transition Animations */
 .fade-in {
-  animation: fadeIn 0.5s ease-in;
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes fadeIn {
@@ -271,7 +318,7 @@ h2 {
 }
 
 .slide-out {
-  animation: slideOut 0.3s ease-out forwards;
+  animation: slideOut 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 
 @keyframes slideOut {
@@ -279,6 +326,33 @@ h2 {
     opacity: 0;
     transform: translateX(-100%);
   }
+}
+
+/* Smooth section transitions */
+.smooth-transition {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.section-enter {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.section-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.section-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.section-exit-active {
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 1, 1);
 }
 
 /* Hidden state for smooth transitions */
