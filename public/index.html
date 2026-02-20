@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SK10 Scorekeeper</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>SK10 Scorekeeper</h1>
+        </header>
+
+        <main>
+            <!-- Messages container -->
+            <div id="messages" class="messages-container"></div>
+
+            <!-- Player Setup Phase -->
+            <div id="player-setup-container" class="setup-container">
+                <section class="add-player-section">
+                    <h2>Add Players</h2>
+                    <form id="add-player-form" class="add-player-form">
+                        <div class="input-group">
+                            <label for="player-name-input">Player Name:</label>
+                            <input 
+                                type="text" 
+                                id="player-name-input" 
+                                placeholder="Enter player name"
+                                maxlength="50"
+                                required
+                            >
+                            <button type="submit" id="add-player-btn">Add Player</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="players-section">
+                    <div id="players-list" class="players-list">
+                        <p class="no-players">No players added yet</p>
+                    </div>
+                </section>
+
+                <section class="validation-section">
+                    <div id="validation-status" class="validation-status">
+                        <div class="validation-message status-waiting">
+                            <p>Add 2-8 players to start the game</p>
+                            <p class="player-count">Players: 0/8</p>
+                        </div>
+                    </div>
+                    
+                    <button 
+                        id="start-game-btn" 
+                        class="start-game-btn" 
+                        disabled
+                    >
+                        Need 2 More Players
+                    </button>
+                </section>
+            </div>
+
+            <!-- Game Phase (hidden initially) -->
+            <div id="game-container" class="game-container" style="display: none;">
+                <section class="game-header">
+                    <h2>Game in Progress</h2>
+                    <div id="current-players" class="current-players"></div>
+                </section>
+                
+                <section class="scoring-section">
+                    <p>Scoring interface will be implemented in future tickets</p>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="src/player.js"></script>
+    <script src="src/playerManager.js"></script>
+    <script src="src/gameState.js"></script>
+    <script src="src/ui/playerSetup.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
