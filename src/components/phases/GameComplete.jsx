@@ -4,13 +4,21 @@ import { useGame } from '../../hooks/useGame';
 const GameComplete = () => {
   const { gameState } = useGame();
   
-  // Mock final scores for demonstration
-  const finalScores = gameState?.finalScores || {
-    1: { name: 'Player 1', score: 420 },
-    2: { name: 'Player 2', score: 380 },
-    3: { name: 'Player 3', score: 340 },
-    4: { name: 'Player 4', score: 290 }
-  };
+  // Get final scores from game state
+  const finalScores = gameState?.finalScores;
+
+  // If no scores available, show error state
+  if (!finalScores || Object.keys(finalScores).length === 0) {
+    return (
+      <div className="game-complete">
+        <h1>Game Complete</h1>
+        <p className="error-message">Error: No final scores available</p>
+        <button className="new-game-btn primary" onClick={() => window.location.reload()}>
+          New Game
+        </button>
+      </div>
+    );
+  }
 
   // Sort players by score (descending)
   const sortedPlayers = Object.entries(finalScores)

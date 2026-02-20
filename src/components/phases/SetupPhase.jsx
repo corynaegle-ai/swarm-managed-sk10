@@ -32,7 +32,7 @@ const SetupPhase = ({ onComplete }) => {
   const handleStartGame = () => {
     if (players.every(p => p.name.trim())) {
       setIsReady(true);
-      onComplete();
+      onComplete(players);
     }
   };
 
