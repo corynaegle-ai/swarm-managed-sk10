@@ -3,8 +3,8 @@
 /**
  * Validates trick entry data
  * @param {Array} playerTricks - Array of player trick data
- * @param {number} handCount - Number of cards in hand for this round
- * @returns {Object} Validation result with isValid boolean and error message
+ * @param {number} handCount - Expected total tricks for the round
+ * @returns {Object} Validation result with isValid flag and error message
  */
 function validateTrickEntry(playerTricks, handCount) {
   // Validate total actual tricks equals hand count
@@ -39,23 +39,23 @@ function validateTrickEntry(playerTricks, handCount) {
 
 /**
  * Updates a player's round score
- * @param {string} playerId - Player identifier
+ * @param {number} playerId - Player identifier
  * @param {number} actualTricks - Number of tricks actually taken
- * @param {boolean} bonusEarned - Whether bonus was earned
- * @returns {number} Calculated score for the round
+ * @param {boolean} bonusEarned - Whether player earned bonus
+ * @returns {number} The calculated round score
  */
 function updatePlayerRoundScore(playerId, actualTricks, bonusEarned) {
-  // This function would normally update game state
-  // For now, it calculates and returns the score
-  return calculateRoundScore(actualTricks, actualTricks, bonusEarned);
+  // This function would typically update game state
+  // For now, return the calculated score
+  return calculateRoundScore(playerId, actualTricks, bonusEarned);
 }
 
 /**
- * Calculates score for a single round
- * @param {number} predicted - Number of tricks predicted
- * @param {number} actual - Number of tricks actually taken
+ * Calculates round score for a player
+ * @param {number} predicted - Predicted tricks
+ * @param {number} actual - Actual tricks taken
  * @param {boolean} bonusEarned - Whether bonus was earned
- * @returns {number} Score for this round
+ * @returns {number} The calculated score
  */
 function calculateRoundScore(predicted, actual, bonusEarned) {
   let score = 0;
@@ -75,30 +75,16 @@ function calculateRoundScore(predicted, actual, bonusEarned) {
   return score;
 }
 
-/**
- * Calculates total game score for a player
- * @param {Array} roundScores - Array of round scores
- * @returns {number} Total score
- */
-function calculateTotalScore(roundScores) {
-  return roundScores.reduce((total, score) => total + (score || 0), 0);
-}
-
 // Export functions for use in other modules
-if (typeof window !== 'undefined') {
-  // Browser environment - attach to window
-  window.validateTrickEntry = validateTrickEntry;
-  window.updatePlayerRoundScore = updatePlayerRoundScore;
-  window.calculateRoundScore = calculateRoundScore;
-  window.calculateTotalScore = calculateTotalScore;
-}
-
 if (typeof module !== 'undefined' && module.exports) {
-  // Node.js environment - export as module
   module.exports = {
     validateTrickEntry,
     updatePlayerRoundScore,
-    calculateRoundScore,
-    calculateTotalScore
+    calculateRoundScore
   };
+} else {
+  // Browser global scope
+  window.validateTrickEntry = validateTrickEntry;
+  window.updatePlayerRoundScore = updatePlayerRoundScore;
+  window.calculateRoundScore = calculateRoundScore;
 }

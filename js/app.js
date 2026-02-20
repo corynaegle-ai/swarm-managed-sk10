@@ -179,16 +179,22 @@ class TricksterGame {
         return;
       }
       
-      // Validate trick entries
+      // Validate trick entries using imported scoring function
       const handCount = this.calculateHandCountForRound(this.currentRound);
-      const validation = this.validateTrickEntry(formData, handCount);
+      let validation;
+      
+      if (typeof validateTrickEntry === 'function') {
+        validation = validateTrickEntry(formData, handCount);
+      } else {
+        validation = this.validateTrickEntry(formData, handCount);
+      }
       
       if (!validation.isValid) {
         this.showError(validation.error);
         return;
       }
       
-      // Update player scores
+      // Update player scores using scoring functions
       this.updatePlayerScores(formData);
       
       // Advance to next round or end game
@@ -203,6 +209,7 @@ class TricksterGame {
   extractFormData() {
     const playerTricks = [];
     let extractionSuccessful = true;
+    let missingInputs = [];
     
     this.players.forEach((player) => {
       // Try multiple selector patterns for robustness
@@ -219,8 +226,21 @@ class TricksterGame {
                        document.querySelector(`[data-player="${player.id}"][data-type="bonus"]`);
       
       // Validate inputs exist and have values
-      if (!predictedInput || !actualInput) {
-        console.error(`Missing inputs for player ${player.name}`);
+      if (!predictedInput) {
+        missingInputs.push(`${player.name} predicted tricks`);
+        extractionSuccessful = false;
+        return;
+      }
+      
+      if (!actualInput) {
+        missingInputs.push(`${player.name} actual tricks`);
+        extractionSuccessful = false;
+        return;
+      }
+      
+      // Check for empty values
+      if (predictedInput.value === '' || actualInput.value === '') {
+        missingInputs.push(`${player.name} has empty values`);
         extractionSuccessful = false;
         return;
       }
@@ -231,7 +251,7 @@ class TricksterGame {
       
       // Validate numeric values
       if (isNaN(predicted) || isNaN(actual)) {
-        console.error(`Invalid numeric values for player ${player.name}`);
+        missingInputs.push(`${player.name} has invalid numeric values`);
         extractionSuccessful = false;
         return;
       }
@@ -244,6 +264,10 @@ class TricksterGame {
         bonus: bonus
       });
     });
+    
+    if (!extractionSuccessful && missingInputs.length > 0) {
+      this.showError(`Missing or invalid inputs: ${missingInputs.join(', ')}`);
+    }
     
     return extractionSuccessful ? playerTricks : null;
   }
@@ -287,12 +311,33 @@ class TricksterGame {
         return;
       }
       
-      // Calculate score using scoring.js function
-      const roundScore = this.calculatePlayerScore(
-        trickData.predicted,
-        trickData.actual,
-        trickData.bonus
-      );
+      // Calculate score using imported scoring functions
+      let roundScore;
+      
+      if (typeof updatePlayerRoundScore === 'function') {
+        // Use imported scoring function with correct signature
+        roundScore = updatePlayerRoundScore(
+          trickData.playerId,
+          trickData.actual,
+          trickData.bonus
+        );
+        
+        // Also calculate using the prediction for proper scoring
+        if (typeof calculateRoundScore === 'function') {
+          roundScore = calculateRoundScore(
+            trickData.predicted,
+            trickData.actual,
+            trickData.bonus
+          );
+        }
+      } else {
+        // Fallback to local calculation
+        roundScore = this.calculatePlayerScore(
+          trickData.predicted,
+          trickData.actual,
+          trickData.bonus
+        );
+      }
       
       // Update player's scores
       player.roundScores[this.currentRound - 1] = roundScore;
@@ -337,6 +382,7 @@ class TricksterGame {
       scoreElement.textContent = player.totalScore;
     } else {
       console.warn(`Score display element not found for player ${player.name}`);
+      this.showError(`Failed to update score display for ${player.name}. Score: ${player.totalScore}`);
     }
   }
 
@@ -361,15 +407,29 @@ class TricksterGame {
     if (this.currentRound >= this.maxRounds) {
       this.endGame();
     } else {
-      this.advanceToNextRound();
+      const advanced = this.advanceToNextRound();
+      if (!advanced) {
+        console.error('Failed to advance to next round');
+      }
     }
   }
 
   advanceToNextRound() {
+    // Validate that all players have valid scores for current round
+    const incompletePlayerNames = this.players.filter(player => 
+      !player.roundScores[this.currentRound - 1] && player.roundScores[this.currentRound - 1] !== 0
+    ).map(player => player.name);
+    
+    if (incompletePlayerNames.length > 0) {
+      this.showError(`Cannot advance round: Missing scores for ${incompletePlayerNames.join(', ')}`);
+      return false;
+    }
+    
     this.currentRound++;
     this.clearForm();
     this.setupGameRound();
     this.showSuccess(`Round ${this.currentRound - 1} completed! Starting Round ${this.currentRound}`);
+    return true;
   }
 
   endGame() {

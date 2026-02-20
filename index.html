@@ -1,91 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trickster Game</title>
-  <link rel="stylesheet" href="css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trickster Scoring Game</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="game-container">
-    <h1>Trickster Card Game</h1>
-    
-    <div class="game-setup" id="game-setup">
-      <h2>Game Setup</h2>
-      <div class="player-setup">
-        <label for="num-players">Number of Players:</label>
-        <select id="num-players">
-          <option value="3">3 Players</option>
-          <option value="4" selected>4 Players</option>
-          <option value="5">5 Players</option>
-        </select>
-      </div>
-      
-      <div class="player-names" id="player-names">
-        <div class="player-name-input">
-          <label>Player 1:</label>
-          <input type="text" class="player-name" placeholder="Enter name" required>
-        </div>
-        <div class="player-name-input">
-          <label>Player 2:</label>
-          <input type="text" class="player-name" placeholder="Enter name" required>
-        </div>
-        <div class="player-name-input">
-          <label>Player 3:</label>
-          <input type="text" class="player-name" placeholder="Enter name" required>
-        </div>
-        <div class="player-name-input">
-          <label>Player 4:</label>
-          <input type="text" class="player-name" placeholder="Enter name" required>
-        </div>
-      </div>
-      
-      <button id="start-game" class="btn-primary">Start Game</button>
-    </div>
-    
-    <div class="game-play" id="game-play" style="display: none;">
-      <div class="game-status">
-        <h2>Round <span id="current-round">1</span> of 10</h2>
-        <p>Hand Count: <span id="hand-count">10</span></p>
-      </div>
-      
-      <div class="scoreboard">
-        <h3>Current Scores</h3>
-        <div id="scoreboard-container">
-          <!-- Player scores will be dynamically inserted here -->
-        </div>
-      </div>
-      
-      <div class="trick-entry">
-        <h3>Enter Tricks for Round <span id="round-display">1</span></h3>
-        <form id="trick-entry-form">
-          <div id="player-tricks-container">
-            <!-- Player trick inputs will be dynamically inserted here -->
-            <!-- Each player will have: predicted-tricks input, actual-tricks input, and bonus checkboxes -->
-          </div>
-          
-          <div class="form-actions">
-            <button type="submit" class="btn-primary">Submit Tricks</button>
-            <button type="button" id="clear-form" class="btn-secondary">Clear</button>
-          </div>
-        </form>
+    <div class="container">
+        <header>
+            <h1>Trickster Scoring Game</h1>
+        </header>
         
-        <div id="error-container" class="error-container" style="display: none;">
-          <!-- Validation errors will be displayed here -->
-        </div>
-      </div>
+        <!-- Game Setup -->
+        <section id="game-setup" class="game-section">
+            <h2>Game Setup</h2>
+            <div class="setup-controls">
+                <label for="num-players">Number of Players:</label>
+                <select id="num-players">
+                    <option value="3">3 Players</option>
+                    <option value="4" selected>4 Players</option>
+                    <option value="5">5 Players</option>
+                    <option value="6">6 Players</option>
+                </select>
+            </div>
+            
+            <div id="player-names" class="player-names-container">
+                <!-- Player name inputs generated dynamically -->
+            </div>
+            
+            <button id="start-game" class="btn btn-primary">Start Game</button>
+        </section>
+        
+        <!-- Game Play -->
+        <section id="game-play" class="game-section" style="display: none;">
+            <div class="game-header">
+                <h2>Round <span id="current-round">1</span> of 10</h2>
+                <div class="round-info">
+                    <span>Hand Count: <span id="hand-count">10</span></span>
+                </div>
+            </div>
+            
+            <div id="scoreboard-container" class="scoreboard">
+                <!-- Scoreboard generated dynamically -->
+            </div>
+            
+            <form id="trick-entry-form" class="trick-entry-form">
+                <h3>Enter Tricks for Round <span id="round-display">1</span></h3>
+                
+                <div id="player-tricks-container" class="player-tricks-container">
+                    <!-- Player trick inputs generated dynamically -->
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Submit Round</button>
+                    <button type="button" id="clear-form" class="btn btn-secondary">Clear Form</button>
+                </div>
+            </form>
+            
+            <div id="error-container" class="error-container" style="display: none;">
+                <!-- Error messages displayed here -->
+            </div>
+        </section>
+        
+        <!-- Game End -->
+        <section id="game-end" class="game-section" style="display: none;">
+            <h2>Game Complete!</h2>
+            <div id="final-scores">
+                <!-- Final scores displayed here -->
+            </div>
+            <button id="new-game" class="btn btn-primary">New Game</button>
+        </section>
     </div>
     
-    <div class="game-end" id="game-end" style="display: none;">
-      <h2>Game Over!</h2>
-      <div id="final-scores">
-        <!-- Final scores and winner will be displayed here -->
-      </div>
-      <button id="new-game" class="btn-primary">New Game</button>
-    </div>
-  </div>
-  
-  <script src="js/scoring.js"></script>
-  <script src="js/app.js"></script>
+    <script src="js/scoring.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
