@@ -1,6 +1,18 @@
 /* Score Display Styles */
 
 #score-section {
+    display: none;
+}
+
+#score-section.active {
+    display: block;
+}
+
+#score-section.hidden {
+    display: none !important;
+}
+
+#score-section {
     margin: 2rem 0;
     padding: 1.5rem;
     background-color: #f8f9fa;
@@ -323,4 +335,46 @@
 /* Active state for score section */
 #score-section.active {
     border-left: 4px solid #007bff;
+    display: block;
+}
+
+/* Error message styles */
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    border: 1px solid #f5c6cb;
+    font-size: 0.9rem;
+}
+
+/* Success message styles */
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    border: 1px solid #c3e6cb;
+    font-size: 0.9rem;
+}
+
+/* Loading state */
+.scoreboard-table.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.scoreboard-table.loading::after {
+    content: 'Updating scores...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 1rem;
+    border-radius: 4px;
+    font-weight: 500;
+    color: #007bff;
 }

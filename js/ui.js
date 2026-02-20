@@ -10,8 +10,13 @@ class UIManager {
         this.calculateScoreBtn = document.getElementById('calculate-score-btn');
         this.closeResultsBtn = document.getElementById('close-results-btn');
         this.modalClose = document.querySelector('.modal-close');
+        this.scoreSection = document.getElementById('score-section');
+        
+        this.autoCalculationEnabled = true;
+        this.gameState = null;
         
         this.initializeEventListeners();
+        this.setupAutomaticScoreCalculation();
     }
     
     initializeEventListeners() {
@@ -35,6 +40,84 @@ class UIManager {
                 }
             });
         }
+        
+        // Listen for game state changes
+        document.addEventListener('gameStateChanged', (e) => {
+            this.handleGameStateChange(e.detail);
+        });
+        
+        document.addEventListener('roundEnded', (e) => {
+            this.handleRoundEnd(e.detail);
+        });
+        
+        document.addEventListener('scoreUpdated', (e) => {
+            this.handleScoreUpdate(e.detail);
+        });
+    }
+    
+    setupAutomaticScoreCalculation() {
+        // Poll for game state changes if events aren't available
+        setInterval(() => {
+            this.checkForGameUpdates();
+        }, 1000);
+    }
+    
+    checkForGameUpdates() {
+        try {
+            let currentGameState = null;
+            
+            // Try different ways to get game state
+            if (typeof window.getGameState === 'function') {
+                currentGameState = window.getGameState();
+            } else if (window.gameManager && typeof window.gameManager.getGameState === 'function') {
+                currentGameState = window.gameManager.getGameState();
+            }
+            
+            if (currentGameState && JSON.stringify(currentGameState) !== JSON.stringify(this.gameState)) {
+                this.gameState = currentGameState;
+                this.handleGameStateChange(currentGameState);
+            }
+        } catch (error) {
+            console.warn('Unable to check game updates:', error.message);
+        }
+    }
+    
+    handleGameStateChange(gameState) {
+        if (!gameState) return;
+        
+        // Show score section when game starts
+        if (gameState.players && gameState.players.length > 0) {
+            this.showScoreSection();
+            this.displayScoreboard(gameState.players);
+        }
+        
+        // Auto-calculate if round ended
+        if (gameState.roundEnded && this.autoCalculationEnabled) {
+            this.handleScoreCalculation();
+        }
+    }
+    
+    handleRoundEnd(roundData) {
+        if (this.autoCalculationEnabled) {
+            setTimeout(() => {
+                this.handleScoreCalculation();
+            }, 100);
+        }
+    }
+    
+    handleScoreUpdate(scoreData) {
+        if (scoreData && scoreData.players) {
+            this.displayScoreboard(scoreData.players);
+        } else {
+            this.refreshScoreboard();
+        }
+    }
+    
+    showScoreSection() {
+        if (this.scoreSection) {
+            this.scoreSection.classList.remove('hidden');
+            this.scoreSection.classList.add('active');
+        }
     }
     
     /**
@@ -55,38 +138,52 @@ class UIManager {
                 const emptyRow = document.createElement('tr');
                 emptyRow.innerHTML = '<td colspan="2" class="empty-state">No players added yet</td>';
                 this.scoreboardBody.appendChild(emptyRow);
+                this.hideScoreSection();
                 return;
             }
             
+            // Show score section when there are players
+            this.showScoreSection();
+            
             // Sort players by score (highest first)
-            const sortedPlayers = [...players].sort((a, b) => (b.score || 0) - (a.score || 0));
+            const sortedPlayers = [...players].sort((a, b) => (b.score || b.totalScore || 0) - (a.score || a.totalScore || 0));
             
             sortedPlayers.forEach((player, index) => {
                 const row = document.createElement('tr');
                 row.className = index === 0 ? 'leading-player' : '';
+                row.classList.add('score-updated');
+                
+                const score = player.score || player.totalScore || 0;
                 
                 row.innerHTML = `
                     <td class="player-name">${this.escapeHtml(player.name || 'Unknown Player')}</td>
-                    <td class="player-score">${player.score || 0}</td>
+                    <td class="player-score">${score}</td>
                 `;
                 
                 this.scoreboardBody.appendChild(row);
             });
             
-            // Update scoreboard visibility
-            const scoreSection = document.getElementById('score-section');
-            if (scoreSection) {
-                scoreSection.classList.add('active');
-            }
+            // Remove animation class after animation completes
+            setTimeout(() => {
+                const rows = this.scoreboardBody.querySelectorAll('tr');
+                rows.forEach(row => row.classList.remove('score-updated'));
+            }, 1000);
             
         } catch (error) {
             console.error('Error displaying scoreboard:', error);
         }
     }
     
+    hideScoreSection() {
+        if (this.scoreSection) {
+            this.scoreSection.classList.add('hidden');
+            this.scoreSection.classList.remove('active');
+        }
+    }
+    
     /**
      * Show round results modal with scoring breakdown
-     * @param {Object} roundScores - Object containing round scoring data
+     * @param {Object|Array} roundScores - Round scoring data
      */
     showRoundResults(roundScores) {
         if (!this.roundResultsModal || !this.roundScoresBreakdown) {
@@ -98,8 +195,8 @@ class UIManager {
             // Clear existing content
             this.roundScoresBreakdown.innerHTML = '';
             
-            if (!roundScores || Object.keys(roundScores).length === 0) {
-                this.roundScoresBreakdown.innerHTML = '<p class="no-results">No round results to display</p>';
+            if (!this.validateRoundScores(roundScores)) {
+                this.roundScoresBreakdown.innerHTML = '<p class="no-results">No valid round results to display</p>';
             } else {
                 // Create breakdown table
                 const table = document.createElement('table');
@@ -117,19 +214,37 @@ class UIManager {
                 
                 const tbody = document.createElement('tbody');
                 
-                Object.entries(roundScores).forEach(([playerName, scoreData]) => {
-                    const row = document.createElement('tr');
-                    const details = scoreData.details || 'No details available';
-                    const score = scoreData.score || scoreData || 0;
-                    
-                    row.innerHTML = `
-                        <td class="player-name">${this.escapeHtml(playerName)}</td>
-                        <td class="round-score">${score}</td>
-                        <td class="score-details">${this.escapeHtml(details)}</td>
-                    `;
-                    
-                    tbody.appendChild(row);
-                });
+                // Handle both object and array formats
+                if (Array.isArray(roundScores)) {
+                    roundScores.forEach(playerData => {
+                        const row = document.createElement('tr');
+                        const name = playerData.name || playerData.playerName || 'Unknown Player';
+                        const score = playerData.roundScore || playerData.score || 0;
+                        const details = playerData.details || playerData.breakdown || 'No details available';
+                        
+                        row.innerHTML = `
+                            <td class="player-name">${this.escapeHtml(name)}</td>
+                            <td class="round-score">${score}</td>
+                            <td class="score-details">${this.escapeHtml(details)}</td>
+                        `;
+                        
+                        tbody.appendChild(row);
+                    });
+                } else {
+                    Object.entries(roundScores).forEach(([playerName, scoreData]) => {
+                        const row = document.createElement('tr');
+                        const details = scoreData.details || scoreData.breakdown || 'No details available';
+                        const score = scoreData.score || scoreData.roundScore || scoreData || 0;
+                        
+                        row.innerHTML = `
+                            <td class="player-name">${this.escapeHtml(playerName)}</td>
+                            <td class="round-score">${score}</td>
+                            <td class="score-details">${this.escapeHtml(details)}</td>
+                        `;
+                        
+                        tbody.appendChild(row);
+                    });
+                }
                 
                 table.appendChild(tbody);
                 this.roundScoresBreakdown.appendChild(table);
@@ -157,29 +272,48 @@ class UIManager {
      */
     handleScoreCalculation() {
         try {
+            let roundScores = null;
+            
             // Check if game.js functions are available
             if (typeof window.calculateRoundScores === 'function') {
-                const roundScores = window.calculateRoundScores();
-                this.showRoundResults(roundScores);
+                roundScores = window.calculateRoundScores();
             } else if (typeof window.gameManager !== 'undefined' && typeof window.gameManager.calculateRoundScores === 'function') {
-                const roundScores = window.gameManager.calculateRoundScores();
-                this.showRoundResults(roundScores);
+                roundScores = window.gameManager.calculateRoundScores();
             } else {
-                console.warn('Score calculation function not found. Showing mock results.');
-                // Mock data for demonstration
-                const mockScores = {
-                    'Player 1': { score: 15, details: 'Base score: 10, Bonus: 5' },
-                    'Player 2': { score: 12, details: 'Base score: 8, Bonus: 4' },
-                    'Player 3': { score: 8, details: 'Base score: 8, No bonus' }
-                };
-                this.showRoundResults(mockScores);
+                console.error('Score calculation function not available. Cannot calculate scores.');
+                this.showError('Score calculation is not available. Please ensure the game is properly initialized.');
+                return;
             }
             
-            // Update scoreboard after calculation
-            this.refreshScoreboard();
+            if (roundScores) {
+                this.showRoundResults(roundScores);
+                // Update scoreboard after calculation
+                this.refreshScoreboard();
+            } else {
+                this.showError('No round scores available to calculate.');
+            }
             
         } catch (error) {
             console.error('Error handling score calculation:', error);
+            this.showError('Error calculating scores: ' + error.message);
+        }
+    }
+    
+    showError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = message;
+        
+        // Insert error message temporarily
+        const scoreSection = this.scoreSection;
+        if (scoreSection) {
+            scoreSection.insertBefore(errorDiv, scoreSection.firstChild);
+            
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.parentNode.removeChild(errorDiv);
+                }
+            }, 5000);
         }
     }
     
@@ -196,12 +330,8 @@ class UIManager {
             } else if (typeof window.gameManager !== 'undefined' && typeof window.gameManager.getPlayers === 'function') {
                 players = window.gameManager.getPlayers();
             } else {
-                // Mock data for demonstration
-                players = [
-                    { name: 'Player 1', score: 15 },
-                    { name: 'Player 2', score: 12 },
-                    { name: 'Player 3', score: 8 }
-                ];
+                console.warn('No player data source available');
+                return;
             }
             
             this.displayScoreboard(players);
@@ -223,15 +353,26 @@ class UIManager {
     }
     
     /**
-     * Initialize scoreboard with demo data
+     * Validate round scores structure
+     * @param {*} roundScores - Round scores data to validate
+     * @returns {boolean} True if valid structure
      */
-    initializeDemoData() {
-        const demoPlayers = [
-            { name: 'Player 1', score: 0 },
-            { name: 'Player 2', score: 0 },
-            { name: 'Player 3', score: 0 }
-        ];
-        this.displayScoreboard(demoPlayers);
+    validateRoundScores(roundScores) {
+        if (!roundScores || typeof roundScores !== 'object') {
+            return false;
+        }
+        
+        // Check if it's an array of player objects
+        if (Array.isArray(roundScores)) {
+            return roundScores.every(item => 
+                item && typeof item === 'object' && 
+                (item.name || item.playerName) &&
+                (typeof item.score === 'number' || typeof item.roundScore === 'number')
+            );
+        }
+        
+        // Check if it's an object with player names as keys
+        return Object.keys(roundScores).length > 0;
     }
 }
 
@@ -239,10 +380,10 @@ class UIManager {
 document.addEventListener('DOMContentLoaded', () => {
     window.uiManager = new UIManager();
     
-    // Initialize with demo data if no game data available
+    // Check for existing game data and update UI
     setTimeout(() => {
-        if (!window.gameManager && !window.getPlayers) {
-            window.uiManager.initializeDemoData();
+        if (window.uiManager) {
+            window.uiManager.refreshScoreboard();
         }
     }, 100);
 });
