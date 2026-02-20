@@ -1,84 +1,65 @@
-import { currentPhase, round } from './gameState.js';
-import {} from './gameFlow.js'; // Imported for potential future use, minimal stub
+import { phase, round } from './gameState.js';
+import { incrementRound } from './gameFlow.js';
 
-// Function to initialize game flow
 function initGameFlow() {
-  currentPhase = 'setup';
+  phase = 'setup';
   transitionPhase('setup');
 }
 
-// Function to transition to a new phase
 function transitionPhase(newPhase) {
   // Hide all phase containers
   document.querySelectorAll('.phase-container').forEach(container => {
-    container.classList.add('phase-hidden');
     container.classList.remove('phase-visible');
+    container.classList.add('phase-hidden');
   });
-  
-  // Show the container for the new phase
-  const phaseContainer = document.querySelector(`#${newPhase}-container`);
-  if (phaseContainer) {
-    phaseContainer.classList.remove('phase-hidden');
-    phaseContainer.classList.add('phase-visible');
-  } else {
-    console.error(`Phase container #${newPhase}-container not found`);
+  // Show the new phase container
+  const newContainer = document.querySelector(`.phase-container[data-phase="${newPhase}"]`);
+  if (newContainer) {
+    newContainer.classList.remove('phase-hidden');
+    newContainer.classList.add('phase-visible');
   }
-  
   // Update phase indicator
-  const phaseIndicator = document.querySelector('.phase-indicator');
-  if (phaseIndicator) {
-    phaseIndicator.textContent = newPhase;
+  const indicator = document.querySelector('.phase-indicator');
+  if (indicator) {
+    indicator.textContent = newPhase.charAt(0).toUpperCase() + newPhase.slice(1);
   }
-  
-  // Enable/disable buttons based on phase
-  // Assuming buttons exist; add specific logic if needed
-  const startBiddingBtn = document.querySelector('#start-bidding-btn');
-  const submitBidsBtn = document.querySelector('#submit-bids-btn');
-  const nextRoundBtn = document.querySelector('#next-round-btn');
-  
+  // Update buttons based on phase
+  // Example: disable/enable specific buttons
+  const startBiddingBtn = document.getElementById('start-bidding-btn');
+  const submitBidsBtn = document.getElementById('submit-bids-btn');
+  const nextRoundBtn = document.getElementById('next-round-btn');
   if (startBiddingBtn) startBiddingBtn.disabled = newPhase !== 'setup';
   if (submitBidsBtn) submitBidsBtn.disabled = newPhase !== 'bidding';
   if (nextRoundBtn) nextRoundBtn.disabled = newPhase !== 'resolution';
-  
-  currentPhase = newPhase;
 }
 
 // Event listeners
-document.addEventListener('DOMContentLoaded', () => {
-  // Integrate with existing initialization (assume minimal)
+if (document.getElementById('start-bidding-btn')) {
+  document.getElementById('start-bidding-btn').addEventListener('click', () => transitionPhase('bidding'));
+}
+if (document.getElementById('submit-bids-btn')) {
+  document.getElementById('submit-bids-btn').addEventListener('click', () => transitionPhase('resolution'));
+}
+if (document.getElementById('next-round-btn')) {
+  document.getElementById('next-round-btn').addEventListener('click', () => {
+    incrementRound();
+    if (round > 10) {
+      transitionPhase('completion');
+    } else {
+      transitionPhase('bidding');
+    }
+  });
+}
+
+// Hook into existing start-game-btn
+if (document.getElementById('start-game-btn')) {
+  document.getElementById('start-game-btn').addEventListener('click', () => {
+    transitionPhase('bidding');
+  });
+}
+
+// Initialize on DOMContentLoaded
+window.addEventListener('DOMContentLoaded', () => {
+  // Existing initialization can be here, but we add initGameFlow
   initGameFlow();
-  
-  // Add to existing start-game-btn handler (assume it exists)
-  const startGameBtn = document.querySelector('#start-game-btn');
-  if (startGameBtn) {
-    startGameBtn.addEventListener('click', () => {
-      transitionPhase('bidding');
-    });
-  }
-  
-  const startBiddingBtn = document.querySelector('#start-bidding-btn');
-  if (startBiddingBtn) {
-    startBiddingBtn.addEventListener('click', () => {
-      transitionPhase('bidding');
-    });
-  }
-  
-  const submitBidsBtn = document.querySelector('#submit-bids-btn');
-  if (submitBidsBtn) {
-    submitBidsBtn.addEventListener('click', () => {
-      transitionPhase('resolution');
-    });
-  }
-  
-  const nextRoundBtn = document.querySelector('#next-round-btn');
-  if (nextRoundBtn) {
-    nextRoundBtn.addEventListener('click', () => {
-      round++;
-      if (round > 10) {
-        transitionPhase('completion');
-      } else {
-        transitionPhase('bidding');
-      }
-    });
-  }
 });

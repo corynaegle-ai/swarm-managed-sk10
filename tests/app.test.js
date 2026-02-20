@@ -1,18 +1,15 @@
-// Basic test for app.js functions (using a simple test runner like Jest)
-import { initGameFlow, transitionPhase } from '../js/app.js';
-import { currentPhase, round } from '../js/gameState.js';
-
-describe('initGameFlow', () => {
-  it('should set initial phase to setup', () => {
-    initGameFlow();
-    expect(currentPhase).toBe('setup');
-  });
+// Basic test to check if initGameFlow and transitionPhase are defined
+// Assuming a testing framework like Jest
+// This is a minimal test example
+test('initGameFlow sets initial phase', () => {
+  // Mock DOM elements
+  document.body.innerHTML = '<div class="phase-container" data-phase="setup"></div><div class="phase-indicator"></div>';
+  initGameFlow();
+  expect(document.querySelector('.phase-container[data-phase="setup"]').classList.contains('phase-visible')).toBe(true);
 });
 
-describe('transitionPhase', () => {
-  it('should update phase and handle round increment', () => {
-    transitionPhase('bidding');
-    expect(currentPhase).toBe('bidding');
-    // Mock DOM for full test
-  });
+test('transitionPhase updates phase', () => {
+  document.body.innerHTML = '<div class="phase-container" data-phase="bidding"></div><div class="phase-indicator"></div>';
+  transitionPhase('bidding');
+  expect(document.querySelector('.phase-indicator').textContent).toBe('Bidding');
 });
