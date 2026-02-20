@@ -1,271 +1,155 @@
-/**
- * UI Components for Player Management
- * Handles DOM manipulation and user interactions
- */
 export class UIComponents {
     constructor() {
-        this.elements = {};
-        this.initializeElements();
+        this.animationDuration = 400; // Match CSS transition duration
     }
-
-    /**
-     * Initialize DOM element references with error checking
-     */
-    initializeElements() {
-        const elementIds = [
-            'player-setup',
-            'player-form',
-            'player-name',
-            'add-player-btn',
-            'error-container',
-            'player-list',
-            'players-grid',
-            'player-count',
-            'start-game-btn',
-            'game-interface',
-            'back-to-setup-btn'
-        ];
-
-        elementIds.forEach(id => {
-            const element = document.getElementById(id);
-            if (!element) {
-                console.warn(`Element with ID '${id}' not found`);
-            }
-            this.elements[id] = element;
-        });
+    
+    createElement(tag, className = '', textContent = '') {
+        const element = document.createElement(tag);
+        if (className) element.className = className;
+        if (textContent) element.textContent = textContent;
+        return element;
     }
-
-    /**
-     * Safely get element with error checking
-     * @param {string} id - Element ID
-     * @returns {Element|null} DOM element or null
-     */
-    getElement(id) {
-        if (!this.elements[id]) {
-            console.error(`Element '${id}' not found or not initialized`);
-            return null;
-        }
-        return this.elements[id];
-    }
-
-    /**
-     * Show error message
-     * @param {string} message - Error message to display
-     */
-    showError(message) {
-        const errorContainer = this.getElement('error-container');
-        if (!errorContainer) return;
-
-        errorContainer.innerHTML = `
-            <div class="error-message fade-in">
-                ${this.escapeHtml(message)}
-            </div>
-        `;
-
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-            this.clearError();
-        }, 5000);
-    }
-
-    /**
-     * Show success message
-     * @param {string} message - Success message to display
-     */
-    showSuccess(message) {
-        const errorContainer = this.getElement('error-container');
-        if (!errorContainer) return;
-
-        errorContainer.innerHTML = `
-            <div class="success-message fade-in">
-                ${this.escapeHtml(message)}
-            </div>
-        `;
-
-        // Auto-hide after 3 seconds
-        setTimeout(() => {
-            this.clearError();
-        }, 3000);
-    }
-
-    /**
-     * Clear error/success messages
-     */
-    clearError() {
-        const errorContainer = this.getElement('error-container');
-        if (!errorContainer) return;
-
-        const messageElement = errorContainer.querySelector('.error-message, .success-message');
-        if (messageElement) {
-            messageElement.classList.add('slide-out');
-            setTimeout(() => {
-                errorContainer.innerHTML = '';
-            }, 300);
-        }
-    }
-
-    /**
-     * Update player list display
-     * @param {Array} players - Array of player objects
-     */
-    updatePlayerList(players) {
-        const playersGrid = this.getElement('players-grid');
-        const playerCount = this.getElement('player-count');
-        const startGameBtn = this.getElement('start-game-btn');
-        
-        if (!playersGrid || !playerCount || !startGameBtn) return;
-
-        // Update player count
-        playerCount.textContent = `Players: ${players.length}`;
-
-        // Update start game button state
-        if (players.length >= 2) {
-            startGameBtn.disabled = false;
-            startGameBtn.classList.remove('disabled');
-        } else {
-            startGameBtn.disabled = true;
-            startGameBtn.classList.add('disabled');
-        }
-
-        // Update players grid
-        if (players.length === 0) {
-            playersGrid.innerHTML = '<div class="no-players">No players added yet. Add at least 2 players to start the game.</div>';
+    
+    showError(container, message) {
+        if (!container) {
+            console.error('Error container not found');
             return;
         }
-
-        playersGrid.innerHTML = players.map(player => `
-            <div class="player-item fade-in" data-player-id="${player.id}">
-                <div class="player-info">
-                    <div class="player-name">${this.escapeHtml(player.name)}</div>
-                    <div class="player-id">${player.id}</div>
-                </div>
-                <div class="player-actions">
-                    <button class="btn btn-danger remove-player-btn" data-player-id="${player.id}">
-                        Remove
-                    </button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    /**
-     * Clear player name input
-     */
-    clearPlayerNameInput() {
-        const playerNameInput = this.getElement('player-name');
-        if (playerNameInput) {
-            playerNameInput.value = '';
-            playerNameInput.focus();
-        }
-    }
-
-    /**
-     * Show player setup section
-     */
-    showPlayerSetup() {
-        const playerSetup = this.getElement('player-setup');
-        const gameInterface = this.getElement('game-interface');
         
-        if (playerSetup) {
-            playerSetup.classList.remove('hidden', 'slide-out');
-            playerSetup.classList.add('fade-in');
-        }
+        this.clearMessages(container);
         
-        if (gameInterface) {
-            gameInterface.classList.add('slide-out');
-            setTimeout(() => {
-                gameInterface.classList.add('hidden');
-                gameInterface.classList.remove('slide-out');
-            }, 300);
-        }
-    }
-
-    /**
-     * Show game interface
-     */
-    showGameInterface() {
-        const playerSetup = this.getElement('player-setup');
-        const playerList = this.getElement('player-list');
-        const gameInterface = this.getElement('game-interface');
+        const errorDiv = this.createElement('div', 'error-message', message);
+        container.appendChild(errorDiv);
         
-        if (playerSetup) {
-            playerSetup.classList.add('slide-out');
-            setTimeout(() => {
-                playerSetup.classList.add('hidden');
-                playerSetup.classList.remove('slide-out');
-            }, 300);
-        }
-        
-        if (playerList) {
-            playerList.classList.add('slide-out');
-            setTimeout(() => {
-                playerList.classList.add('hidden');
-                playerList.classList.remove('slide-out');
-            }, 300);
-        }
-        
-        if (gameInterface) {
-            setTimeout(() => {
-                gameInterface.classList.remove('hidden');
-                gameInterface.classList.add('fade-in');
-            }, 300);
-        }
-    }
-
-    /**
-     * Add smooth transition class
-     * @param {Element} element - DOM element
-     * @param {string} transitionClass - CSS class for transition
-     */
-    addTransition(element, transitionClass) {
-        if (element) {
-            element.classList.add(transitionClass);
-        }
-    }
-
-    /**
-     * Escape HTML to prevent XSS
-     * @param {string} text - Text to escape
-     * @returns {string} Escaped text
-     */
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    /**
-     * Set loading state for button
-     * @param {Element} button - Button element
-     * @param {boolean} loading - Loading state
-     */
-    setButtonLoading(button, loading) {
-        if (!button) return;
-
-        if (loading) {
-            button.disabled = true;
-            button.dataset.originalText = button.textContent;
-            button.textContent = 'Loading...';
-            button.classList.add('loading');
-        } else {
-            button.disabled = false;
-            button.textContent = button.dataset.originalText || button.textContent;
-            button.classList.remove('loading');
-        }
-    }
-
-    /**
-     * Focus on element with error handling
-     * @param {string} elementId - Element ID to focus
-     */
-    focusElement(elementId) {
-        const element = this.getElement(elementId);
-        if (element && typeof element.focus === 'function') {
-            try {
-                element.focus();
-            } catch (error) {
-                console.warn(`Could not focus element ${elementId}:`, error);
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.classList.add('slide-out');
+                setTimeout(() => {
+                    if (errorDiv.parentNode) {
+                        errorDiv.remove();
+                    }
+                }, this.animationDuration);
             }
+        }, 5000);
+    }
+    
+    showSuccess(container, message) {
+        if (!container) {
+            console.error('Success container not found');
+            return;
+        }
+        
+        this.clearMessages(container);
+        
+        const successDiv = this.createElement('div', 'success-message', message);
+        container.appendChild(successDiv);
+        
+        // Auto-hide after 3 seconds
+        setTimeout(() => {
+            if (successDiv.parentNode) {
+                successDiv.classList.add('slide-out');
+                setTimeout(() => {
+                    if (successDiv.parentNode) {
+                        successDiv.remove();
+                    }
+                }, this.animationDuration);
+            }
+        }, 3000);
+    }
+    
+    clearMessages(container) {
+        if (!container) return;
+        
+        const messages = container.querySelectorAll('.error-message, .success-message');
+        messages.forEach(message => message.remove());
+    }
+    
+    createPlayerItem(player, onRemove) {
+        const playerItem = this.createElement('div', 'player-item fade-in');
+        
+        const playerInfo = this.createElement('div', 'player-info');
+        const playerName = this.createElement('div', 'player-name', player.name);
+        const playerId = this.createElement('div', 'player-id', player.id);
+        
+        playerInfo.appendChild(playerName);
+        playerInfo.appendChild(playerId);
+        
+        const playerActions = this.createElement('div', 'player-actions');
+        const removeBtn = this.createElement('button', 'btn btn-danger', 'Remove');
+        
+        removeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (onRemove && typeof onRemove === 'function') {
+                onRemove(player.id);
+            }
+        });
+        
+        playerActions.appendChild(removeBtn);
+        playerItem.appendChild(playerInfo);
+        playerItem.appendChild(playerActions);
+        
+        return playerItem;
+    }
+    
+    smoothTransition(fromElement, toElement, callback) {
+        if (!fromElement || !toElement) {
+            console.error('Invalid elements for smooth transition');
+            if (callback) callback();
+            return;
+        }
+        
+        // Add transition classes
+        fromElement.classList.add('smooth-transition', 'section-exit');
+        toElement.classList.add('smooth-transition', 'section-enter');
+        
+        // Show the target element
+        toElement.classList.remove('hidden');
+        
+        // Trigger transition on next frame
+        requestAnimationFrame(() => {
+            fromElement.classList.add('section-exit-active');
+            toElement.classList.add('section-enter-active');
+            toElement.classList.remove('section-enter');
+        });
+        
+        // Complete transition
+        setTimeout(() => {
+            fromElement.classList.add('hidden');
+            fromElement.classList.remove('smooth-transition', 'section-exit', 'section-exit-active');
+            toElement.classList.remove('smooth-transition', 'section-enter-active');
+            
+            if (callback && typeof callback === 'function') {
+                callback();
+            }
+        }, this.animationDuration);
+    }
+    
+    setButtonLoading(button, isLoading) {
+        if (!button) return;
+        
+        if (isLoading) {
+            button.classList.add('loading');
+            button.disabled = true;
+        } else {
+            button.classList.remove('loading');
+            button.disabled = false;
+        }
+    }
+    
+    updateButtonState(button, enabled, text) {
+        if (!button) return;
+        
+        if (enabled) {
+            button.classList.remove('disabled');
+            button.disabled = false;
+        } else {
+            button.classList.add('disabled');
+            button.disabled = true;
+        }
+        
+        if (text) {
+            button.textContent = text;
         }
     }
 }
