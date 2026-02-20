@@ -14,6 +14,7 @@ class Game {
   initDOM() {
     this.roundDisplay = document.querySelector('#round-info');
     this.handsCountDisplay = document.querySelector('#hands-count');
+    this.gameOverDisplay = document.querySelector('#game-over');
     if (!this.roundDisplay || !this.handsCountDisplay) {
       throw new Error('Required DOM elements not found: #round-info and #hands-count');
     }
@@ -22,9 +23,9 @@ class Game {
 
   bindEvents() {
     // Assume existing scoring event or button
-    const scoreButton = document.querySelector('#score-button');
-    if (scoreButton) {
-      scoreButton.addEventListener('click', () => this.handleScoringPhase());
+    this.scoreButton = document.querySelector('#score-button');
+    if (this.scoreButton) {
+      this.scoreButton.addEventListener('click', () => this.handleScoringPhase());
     }
     // Other game events as needed
   }
@@ -66,7 +67,12 @@ class Game {
   endGame() {
     this.gameEnded = true;
     try {
-      alert('Game Over!');
+      if (this.gameOverDisplay) {
+        this.gameOverDisplay.textContent = 'Game Over!';
+      }
+      if (this.scoreButton) {
+        this.scoreButton.disabled = true;
+      }
       // Additional end game logic, e.g., show final scores
       console.log('Game ended after round', this.currentRound.number);
     } catch (error) {
