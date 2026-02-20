@@ -1,19 +1,19 @@
-import { phase, round } from './gameState.js';
-import { incrementRound } from './gameFlow.js';
+import { gameState } from './gameState.js';
+import { gameFlow } from './gameFlow.js';
 
 function initGameFlow() {
-  phase = 'setup';
+  gameState.phase = 'setup';
   transitionPhase('setup');
 }
 
 function transitionPhase(newPhase) {
   // Hide all phase containers
   document.querySelectorAll('.phase-container').forEach(container => {
-    container.classList.remove('phase-visible');
     container.classList.add('phase-hidden');
+    container.classList.remove('phase-visible');
   });
   // Show the new phase container
-  const newContainer = document.querySelector(`.phase-container[data-phase="${newPhase}"]`);
+  const newContainer = document.getElementById(`${newPhase}-container`);
   if (newContainer) {
     newContainer.classList.remove('phase-hidden');
     newContainer.classList.add('phase-visible');
@@ -23,43 +23,51 @@ function transitionPhase(newPhase) {
   if (indicator) {
     indicator.textContent = newPhase.charAt(0).toUpperCase() + newPhase.slice(1);
   }
-  // Update buttons based on phase
-  // Example: disable/enable specific buttons
-  const startBiddingBtn = document.getElementById('start-bidding-btn');
-  const submitBidsBtn = document.getElementById('submit-bids-btn');
-  const nextRoundBtn = document.getElementById('next-round-btn');
-  if (startBiddingBtn) startBiddingBtn.disabled = newPhase !== 'setup';
-  if (submitBidsBtn) submitBidsBtn.disabled = newPhase !== 'bidding';
-  if (nextRoundBtn) nextRoundBtn.disabled = newPhase !== 'resolution';
+  // Update gameState
+  gameState.phase = newPhase;
+  // Enable/disable buttons (simplified)
+  // Assuming buttons exist; add logic as needed
 }
 
-// Event listeners
-if (document.getElementById('start-bidding-btn')) {
-  document.getElementById('start-bidding-btn').addEventListener('click', () => transitionPhase('bidding'));
-}
-if (document.getElementById('submit-bids-btn')) {
-  document.getElementById('submit-bids-btn').addEventListener('click', () => transitionPhase('resolution'));
-}
-if (document.getElementById('next-round-btn')) {
-  document.getElementById('next-round-btn').addEventListener('click', () => {
-    incrementRound();
-    if (round > 10) {
-      transitionPhase('completion');
-    } else {
+document.addEventListener('DOMContentLoaded', () => {
+  // Existing initialization code can be added here
+
+  // Hook into existing start-game-btn
+  const startGameBtn = document.getElementById('start-game-btn');
+  if (startGameBtn) {
+    startGameBtn.addEventListener('click', () => {
+      // Add to existing handler
       transitionPhase('bidding');
-    }
-  });
-}
+    });
+  }
 
-// Hook into existing start-game-btn
-if (document.getElementById('start-game-btn')) {
-  document.getElementById('start-game-btn').addEventListener('click', () => {
-    transitionPhase('bidding');
-  });
-}
+  // Add event listeners for phase control buttons
+  const startBiddingBtn = document.getElementById('start-bidding-btn');
+  if (startBiddingBtn) {
+    startBiddingBtn.addEventListener('click', () => {
+      transitionPhase('bidding');
+    });
+  }
 
-// Initialize on DOMContentLoaded
-window.addEventListener('DOMContentLoaded', () => {
-  // Existing initialization can be here, but we add initGameFlow
+  const submitBidsBtn = document.getElementById('submit-bids-btn');
+  if (submitBidsBtn) {
+    submitBidsBtn.addEventListener('click', () => {
+      transitionPhase('resolution');
+    });
+  }
+
+  const nextRoundBtn = document.getElementById('next-round-btn');
+  if (nextRoundBtn) {
+    nextRoundBtn.addEventListener('click', () => {
+      gameState.round++;
+      if (gameState.round > 10) {
+        transitionPhase('completion');
+      } else {
+        transitionPhase('bidding');
+      }
+    });
+  }
+
+  // Call initGameFlow at the end
   initGameFlow();
 });

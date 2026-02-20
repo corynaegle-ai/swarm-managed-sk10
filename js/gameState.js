@@ -1,2 +1,4 @@
-export let phase = 'setup';
-export let round = 0;
+export const gameState = {
+  phase: 'setup',
+  round: 1
+};
