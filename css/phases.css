@@ -113,3 +113,52 @@
     0% { opacity: 0; transform: translateY(-10px); }
     100% { opacity: 1; transform: translateY(0); }
 }
+
+/* Accessibility: High Contrast Mode */
+@media (prefers-contrast: high) {
+    #setup-phase {
+        background: #ffffff;
+        border: 2px solid #000000;
+    }
+
+    #gameplay-phase {
+        background: #ffffff;
+        border: 2px solid #0066cc;
+    }
+
+    #completion-phase {
+        background: #ffffff;
+        border: 2px solid #006600;
+    }
+
+    .game-controls button,
+    .completion-controls button {
+        border: 2px solid #000000;
+        font-weight: bold;
+    }
+
+    .game-controls button:disabled,
+    .completion-controls button:disabled {
+        border: 2px solid #666666;
+    }
+}
+
+/* Accessibility: Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .game-phase {
+        transition: none;
+    }
+
+    .phase-transition {
+        animation: none;
+    }
+
+    .game-controls button,
+    .completion-controls button {
+        transition: none;
+    }
+
+    @keyframes fadeInOut {
+        0%, 100% { opacity: 1; transform: none; }
+    }
+}
