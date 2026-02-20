@@ -19,7 +19,6 @@ function initGame() {
   gameOver = false;
   currentRound = new Round(roundNumber);
   updateRoundDisplay();
-  // Assume startRound is defined elsewhere or call it here
   startRound();
 }
 
@@ -27,7 +26,8 @@ function initGame() {
 function startRound() {
   if (gameOver) return;
   currentRound.start();
-  // Integrate with existing game flow - assume dealCards() or similar is called here
+  // TODO: Integrate with existing game flow by calling dealCards() or similar game logic here
+  // This should trigger the card dealing and hand setup for the current round
 }
 
 // Function to handle scoring phase end and advance to next round
@@ -49,8 +49,12 @@ function updateRoundDisplay() {
   if (roundInfoElement) {
     roundInfoElement.textContent = `Round: ${roundNumber}`;
   }
-  if (handsCountElement) {
-    handsCountElement.textContent = `Hands: ${currentRound.getHandsCount()}`; // Assume Round has getHandsCount method
+  if (handsCountElement && currentRound) {
+    // Verify the method exists before calling
+    const handsCount = typeof currentRound.getHandsCount === 'function' 
+      ? currentRound.getHandsCount() 
+      : 'N/A';
+    handsCountElement.textContent = `Hands: ${handsCount}`;
   }
 }
 
@@ -64,7 +68,9 @@ function endGame() {
 }
 
 // Event listeners or hooks to call advanceRound after scoring
-// Assuming there's a scoring phase end event, e.g.,
+// NOTE: This requires a custom 'scoringPhaseEnd' event to be dispatched
+// by the scoring module when scoring is complete. Example dispatch:
+// document.dispatchEvent(new CustomEvent('scoringPhaseEnd'));
 document.addEventListener('scoringPhaseEnd', advanceRound);
 
 // Initialize game on load
