@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vanilla JS App</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/scoreboard.css">
 </head>
 <body>
     <div id="app">
@@ -15,6 +16,60 @@
             <div id="player-setup-container"></div>
             <div id="player-list-container"></div>
             <button type="button" id="start-game-btn" disabled>Need 2 more players</button>
+            
+            <section id="scoreboard" class="scoreboard hidden">
+                <header class="scoreboard-header">
+                    <h2>Scoreboard</h2>
+                    <div class="game-status">
+                        <span class="current-round">Round 1</span>
+                        <span class="game-phase">In Progress</span>
+                    </div>
+                </header>
+                
+                <div class="scoreboard-content">
+                    <div class="player-scores-container">
+                        <h3>Current Standings</h3>
+                        <div class="player-cards" id="player-cards">
+                            <!-- Player cards will be dynamically generated -->
+                        </div>
+                    </div>
+                    
+                    <div class="round-breakdown-container">
+                        <h3>Round Breakdown</h3>
+                        <div class="table-container">
+                            <table class="round-breakdown-table" id="round-breakdown-table">
+                                <thead>
+                                    <tr>
+                                        <th>Player</th>
+                                        <!-- Round columns will be dynamically added -->
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="round-breakdown-body">
+                                    <!-- Round data will be dynamically generated -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="final-results hidden" id="final-results">
+                        <h3>Final Results</h3>
+                        <div class="winner-announcement">
+                            <div class="winner-card">
+                                <div class="trophy-icon">🏆</div>
+                                <div class="winner-info">
+                                    <span class="winner-label">Winner</span>
+                                    <span class="winner-name" id="winner-name">Player Name</span>
+                                    <span class="winner-score" id="winner-score">0 points</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="final-standings" id="final-standings">
+                            <!-- Final standings will be dynamically generated -->
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
     <script src="js/player-manager.js"></script>

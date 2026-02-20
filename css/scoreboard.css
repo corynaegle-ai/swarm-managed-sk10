@@ -1,0 +1,378 @@
+/* Scoreboard Styles */
+.scoreboard {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 2rem 0;
+  padding: 2rem;
+  transition: all 0.3s ease;
+}
+
+.scoreboard.hidden {
+  display: none;
+}
+
+/* Scoreboard Header */
+.scoreboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.scoreboard-header h2 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.game-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.current-round {
+  background: #3b82f6;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.game-phase {
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.game-phase.final-results {
+  color: #059669;
+  font-weight: 600;
+}
+
+/* Scoreboard Content Layout */
+.scoreboard-content {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .scoreboard-content {
+    grid-template-columns: 1fr 2fr;
+  }
+  
+  .scoreboard-content.final-results-active {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Player Scores Container */
+.player-scores-container h3,
+.round-breakdown-container h3,
+.final-results h3 {
+  margin: 0 0 1rem 0;
+  color: #374151;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Player Cards */
+.player-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.player-card {
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.player-card.leader {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #f59e0b;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.player-card.leader::before {
+  content: '👑';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #f59e0b;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.player-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.player-name {
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: #1f2937;
+}
+
+.player-score {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #3b82f6;
+}
+
+.player-card.leader .player-score {
+  color: #d97706;
+}
+
+/* Round Breakdown Table */
+.table-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.round-breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.round-breakdown-table th,
+.round-breakdown-table td {
+  padding: 0.75rem;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.round-breakdown-table th {
+  background: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.round-breakdown-table td {
+  color: #1f2937;
+}
+
+.round-breakdown-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.round-breakdown-table .total-score {
+  font-weight: 700;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.round-breakdown-table .leader-row {
+  background: #fef3c7;
+}
+
+.round-breakdown-table .leader-row .total-score {
+  background: #fcd34d;
+  color: #92400e;
+}
+
+/* Final Results */
+.final-results {
+  text-align: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 12px;
+  border: 2px solid #0ea5e9;
+}
+
+.final-results.hidden {
+  display: none;
+}
+
+.winner-announcement {
+  margin-bottom: 2rem;
+}
+
+.winner-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  padding: 2rem;
+  border-radius: 16px;
+  border: 3px solid #f59e0b;
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+}
+
+.trophy-icon {
+  font-size: 3rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+.winner-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.winner-label {
+  font-size: 1rem;
+  color: #92400e;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.winner-name {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.winner-score {
+  font-size: 1.25rem;
+  color: #d97706;
+  font-weight: 600;
+}
+
+/* Final Standings */
+.final-standings {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.final-standing-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.final-standing-item.first-place {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #f59e0b;
+}
+
+.final-standing-item.second-place {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  border-color: #9ca3af;
+}
+
+.final-standing-item.third-place {
+  background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+  border-color: #ea580c;
+}
+
+.standing-position {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #1f2937;
+  min-width: 2rem;
+}
+
+.standing-player {
+  flex-grow: 1;
+  font-weight: 600;
+  color: #374151;
+  margin-left: 1rem;
+}
+
+.standing-score {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #3b82f6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .scoreboard {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+  
+  .scoreboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .game-status {
+    align-items: flex-start;
+  }
+  
+  .scoreboard-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .player-cards {
+    gap: 0.75rem;
+  }
+  
+  .player-card {
+    padding: 0.75rem;
+  }
+  
+  .winner-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+  }
+  
+  .winner-name {
+    font-size: 1.5rem;
+  }
+  
+  .round-breakdown-table th,
+  .round-breakdown-table td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .final-standing-item {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+  
+  .standing-player {
+    margin-left: 0;
+  }
+}
