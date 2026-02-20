@@ -56,49 +56,11 @@ class UIManager {
     }
     
     setupAutomaticScoreCalculation() {
-        // Use event-driven approach instead of polling
-        // Fallback polling only if events fail
-        let eventWorking = false;
-        
-        const testEventListener = () => {
-            eventWorking = true;
-        };
-        
-        document.addEventListener('gameStateChanged', testEventListener, { once: true });
-        
-        // Test if events work by triggering one
-        setTimeout(() => {
-            if (!eventWorking) {
-                console.warn('Event system not working, falling back to polling');
-                // Reduced polling frequency for better performance
-                setInterval(() => {
-                    this.checkForGameUpdates();
-                }, 2000);
-            } else {
-                document.removeEventListener('gameStateChanged', testEventListener);
-            }
-        }, 500);
+        // Fully event-driven approach for efficiency
+        // No polling; rely on custom events from game.js
     }
     
-    checkForGameUpdates() {
-        try {
-            let currentGameState = null;
-            
-            // Try different ways to get game state
-            if (typeof window.getGameState === 'function') {
-                currentGameState = window.getGameState();
-            } else if (window.gameManager && typeof window.gameManager.getGameState === 'function') {
-                currentGameState = window.gameManager.getGameState();
-            }
-            
-            if (currentGameState && JSON.stringify(currentGameState) !== JSON.stringify(this.gameState)) {
-                this.gameState = currentGameState;
-                this.handleGameStateChange(currentGameState);
-            }
-        } catch (error) {
-            console.warn('Unable to check game updates:', error.message);
-        }
-    }
+
     
     handleGameStateChange(gameState) {
         if (!gameState) return;
@@ -175,9 +137,10 @@ class UIManager {
                 row.classList.add('score-updated');
                 
                 const score = player.score || player.totalScore || 0;
+                const playerName = player.name || 'Unknown Player';
                 
                 row.innerHTML = `
-                    <td class="player-name">${this.escapeHtml(player.name)}</td>
+                    <td class="player-name">${this.escapeHtml(playerName)}</td>
                     <td class="player-score">${score}</td>
                 `;
                 
@@ -192,6 +155,7 @@ class UIManager {
             
         } catch (error) {
             console.error('Error displaying scoreboard:', error);
+            this.showError('Failed to display scoreboard. Please check player data.');
         }
     }
     
@@ -295,14 +259,14 @@ class UIManager {
         try {
             let roundScores = null;
             
-            // Check if game.js functions are available
+            // Check if game.js functions are available (assuming game.js exposes these)
             if (typeof window.calculateRoundScores === 'function') {
                 roundScores = window.calculateRoundScores();
             } else if (typeof window.gameManager !== 'undefined' && typeof window.gameManager.calculateRoundScores === 'function') {
                 roundScores = window.gameManager.calculateRoundScores();
             } else {
-                console.error('Score calculation function not available. Cannot calculate scores.');
-                this.showError('Score calculation is not available. Please ensure the game is properly initialized.');
+                console.error('Score calculation function not available from game.js.');
+                this.showError('Score calculation is not available. Ensure game.js is loaded and functions are defined.');
                 return;
             }
             
@@ -343,7 +307,7 @@ class UIManager {
      */
     refreshScoreboard() {
         try {
-            // Try to get updated player data
+            // Try to get updated player data from game.js
             let players = [];
             
             if (typeof window.getPlayers === 'function') {
@@ -351,7 +315,7 @@ class UIManager {
             } else if (typeof window.gameManager !== 'undefined' && typeof window.gameManager.getPlayers === 'function') {
                 players = window.gameManager.getPlayers();
             } else {
-                console.warn('No player data source available');
+                console.warn('No player data source available from game.js');
                 return;
             }
             
@@ -359,6 +323,7 @@ class UIManager {
             
         } catch (error) {
             console.error('Error refreshing scoreboard:', error);
+            this.showError('Failed to refresh scoreboard.');
         }
     }
     
