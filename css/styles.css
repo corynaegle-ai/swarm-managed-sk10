@@ -95,6 +95,11 @@ h2 {
   overflow: hidden;
 }
 
+.btn.loading {
+  color: transparent;
+  pointer-events: none;
+}
+
 .btn.loading::after {
   content: '';
   position: absolute;
@@ -103,8 +108,8 @@ h2 {
   width: 16px;
   height: 16px;
   margin: -8px 0 0 -8px;
-  border: 2px solid transparent;
-  border-top-color: currentColor;
+  border: 2px solid white;
+  border-top-color: transparent;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -329,6 +334,11 @@ h2 {
 }
 
 /* Smooth section transitions */
+/* Note: These transition classes must be applied via JavaScript during section changes.
+   Example usage in app.js:
+   - Add 'section-exit-active' to current section
+   - Add 'section-enter' to new section, then 'section-enter-active' after a frame
+   - Remove old section after transition completes */
 .smooth-transition {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
