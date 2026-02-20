@@ -34,9 +34,25 @@ const SetupPhase = ({ onComplete }) => {
   const handleStartGame = () => {
     if (players.every(p => p.name.trim())) {
       setIsReady(true);
-      // Update game state with players only - phase transition handled by parent
+      // Initialize all required game state properties
+      const initialScores = {};
+      const initialBids = {};
+      const initialTricksWon = {};
+      
+      players.forEach(player => {
+        initialScores[player.id] = 0;
+        initialBids[player.id] = null;
+        initialTricksWon[player.id] = 0;
+      });
+      
       updateGameState({ 
-        players
+        players,
+        scores: initialScores,
+        bids: initialBids,
+        tricksWon: initialTricksWon,
+        currentRound: 1,
+        currentTrick: [],
+        finalScores: null
       });
       onComplete(players);
     }

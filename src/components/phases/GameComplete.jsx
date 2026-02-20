@@ -17,6 +17,20 @@ const GameComplete = () => {
       }, {}) 
       : null);
 
+  const handleNewGame = () => {
+    // Reset game state and return to setup
+    updateGameState({
+      gamePhase: 'setup',
+      players: [],
+      currentRound: 1,
+      currentTrick: [],
+      scores: {},
+      bids: {},
+      tricksWon: {},
+      finalScores: null
+    });
+  };
+
   // If no scores available, show error state
   if (!finalScores || Object.keys(finalScores).length === 0) {
     return (
@@ -36,20 +50,6 @@ const GameComplete = () => {
     .sort((a, b) => b.score - a.score);
 
   const winner = sortedPlayers[0];
-
-  const handleNewGame = () => {
-    // Reset game state and return to setup
-    updateGameState({
-      gamePhase: 'setup',
-      players: [],
-      currentRound: 1,
-      currentTrick: [],
-      scores: {},
-      bids: {},
-      tricksWon: {},
-      finalScores: null
-    });
-  };
 
   const handleExitGame = () => {
     // Exit to main menu or close game

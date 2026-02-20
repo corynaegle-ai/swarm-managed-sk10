@@ -13,10 +13,32 @@ export const useGame = () => {
   });
 
   const updateGameState = (updates) => {
-    setGameState(prev => ({
-      ...prev,
-      ...updates
-    }));
+    setGameState(prev => {
+      // Validate phase transitions if gamePhase is being updated
+      if (updates.gamePhase && updates.gamePhase !== prev.gamePhase) {
+        const validTransitions = {
+          'setup': ['bidding'],
+          'bidding': ['playing'],
+          'playing': ['scoring'],
+          'scoring': ['bidding', 'complete'],
+          'complete': ['setup']
+        };
+
+        const allowedNextPhases = validTransitions[prev.gamePhase] || [];
+        if (!allowedNextPhases.includes(updates.gamePhase)) {
+          console.error(
+            `Invalid phase transition: ${prev.gamePhase} -> ${updates.gamePhase}. ` +
+            `Allowed transitions: ${allowedNextPhases.join(', ')}`
+          );
+          return prev; // Reject invalid transition
+        }
+      }
+
+      return {
+        ...prev,
+        ...updates
+      };
+    });
   };
 
   const resetGame = () => {
