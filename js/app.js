@@ -1,268 +1,448 @@
-import { PlayerManager } from './playermanager.js';
-import { UIComponents } from './uicomponents.js';
+import { PlayerManager } from './player-manager.js';
+import { UIComponents } from './ui-components.js';
 
+/**
+ * Main Application Controller
+ * Coordinates between player management and game flow
+ */
 class App {
-    constructor() {
-        this.playerManager = new PlayerManager();
-        this.uiComponents = new UIComponents();
-        this.elements = {};
-        this.currentSection = 'player-setup';
-        
-        this.init();
+  constructor() {
+    // Animation timing constants - synchronized with CSS
+    this.TIMING = {
+      BUTTON_LOADING: 400, // matches CSS transition duration
+      SMOOTH_TRANSITION: 400, // matches CSS .smooth-transition
+      FADE_ANIMATION: 400 // matches CSS .fade-in animation
+    };
+    
+    this.playerManager = new PlayerManager();
+    this.ui = new UIComponents();
+    this.isInitialized = false;
+    
+    // Bind methods to maintain context
+    this.handlePlayerAdd = this.handlePlayerAdd.bind(this);
+    this.handlePlayerRemove = this.handlePlayerRemove.bind(this);
+    this.handleGameStart = this.handleGameStart.bind(this);
+    this.handleFormSubmit = this.handleFormSubmit.bind(this);
+  }
+
+  /**
+   * Initialize the application
+   */
+  async init() {
+    try {
+      await this.setupEventListeners();
+      await this.initializePlayerSetup();
+      this.isInitialized = true;
+      console.log('App initialized successfully');
+    } catch (error) {
+      this.showUserError('Failed to initialize application. Please refresh the page.', error);
+    }
+  }
+
+  /**
+   * Show error message to user and log technical details
+   */
+  showUserError(userMessage, technicalError = null) {
+    if (technicalError) {
+      console.error('Technical error:', technicalError);
     }
     
-    init() {
-        this.cacheElements();
-        this.bindEvents();
-        this.updatePlayerList();
-        this.updateGameControls();
+    // Show user-friendly error message
+    const errorContainer = document.getElementById('error-container') || this.createErrorContainer();
+    errorContainer.innerHTML = `
+      <div class="error-message">
+        ${userMessage}
+      </div>
+    `;
+  }
+
+  /**
+   * Create error container if it doesn't exist
+   */
+  createErrorContainer() {
+    const container = document.createElement('div');
+    container.id = 'error-container';
+    container.className = 'fade-in';
+    
+    const mainContainer = document.querySelector('.container');
+    if (mainContainer) {
+      mainContainer.insertBefore(container, mainContainer.firstChild);
+    } else {
+      document.body.appendChild(container);
     }
     
-    cacheElements() {
-        const elementIds = [
-            'player-form',
-            'player-name',
-            'add-player-btn',
-            'error-container',
-            'players-container',
-            'players-grid',
-            'no-players',
-            'player-count',
-            'start-game-btn',
-            'player-setup-section',
-            'player-list-section',
-            'game-interface-section',
-            'back-to-setup-btn'
-        ];
-        
-        elementIds.forEach(id => {
-            this.elements[id] = document.getElementById(id);
-            if (!this.elements[id]) {
-                console.error(`Element with id '${id}' not found`);
-            }
-        });
+    return container;
+  }
+
+  /**
+   * Setup event listeners for the application
+   */
+  async setupEventListeners() {
+    const elements = {
+      addPlayerBtn: document.getElementById('add-player-btn'),
+      startGameBtn: document.getElementById('start-game-btn'),
+      playerForm: document.getElementById('player-form')
+    };
+
+    // Check for missing elements and provide user feedback
+    const missingElements = Object.entries(elements)
+      .filter(([key, element]) => !element)
+      .map(([key]) => key);
+
+    if (missingElements.length > 0) {
+      throw new Error(`Missing required UI elements: ${missingElements.join(', ')}. Please check your HTML structure.`);
+    }
+
+    // Setup event listeners
+    elements.addPlayerBtn.addEventListener('click', this.handlePlayerAdd);
+    elements.startGameBtn.addEventListener('click', this.handleGameStart);
+    elements.playerForm.addEventListener('submit', this.handleFormSubmit);
+
+    // Setup input validation
+    const nameInput = document.getElementById('player-name');
+    if (nameInput) {
+      nameInput.addEventListener('input', this.handleInputValidation.bind(this));
+      nameInput.addEventListener('blur', this.handleInputValidation.bind(this));
+    }
+  }
+
+  /**
+   * Handle form submission
+   */
+  handleFormSubmit(event) {
+    event.preventDefault();
+    this.handlePlayerAdd();
+  }
+
+  /**
+   * Handle input validation with visual feedback
+   */
+  handleInputValidation(event) {
+    const input = event.target;
+    const value = input.value.trim();
+    
+    // Remove existing error classes
+    input.classList.remove('error');
+    
+    // Clear any existing error messages for this input
+    const existingError = input.parentNode.querySelector('.error-message');
+    if (existingError) {
+      existingError.remove();
     }
     
-    bindEvents() {
-        // Player form submission
-        if (this.elements['player-form']) {
-            this.elements['player-form'].addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.handleAddPlayer();
-            });
-        }
+    // Validate on blur or if there's content
+    if (event.type === 'blur' || value) {
+      const validation = this.playerManager.validatePlayerName(value);
+      if (!validation.isValid) {
+        input.classList.add('error');
+        this.showInputError(input, validation.error);
+      }
+    }
+  }
+
+  /**
+   * Show error message for specific input
+   */
+  showInputError(input, message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    errorDiv.style.marginTop = '5px';
+    
+    input.parentNode.appendChild(errorDiv);
+  }
+
+  /**
+   * Initialize the player setup interface
+   */
+  async initializePlayerSetup() {
+    await this.updatePlayerList();
+    await this.updateGameControls();
+    
+    // Show player setup section with animation
+    const setupSection = document.querySelector('.player-setup');
+    if (setupSection) {
+      setupSection.classList.add('fade-in');
+    }
+  }
+
+  /**
+   * Handle adding a player with proper loading state
+   */
+  async handlePlayerAdd() {
+    const nameInput = document.getElementById('player-name');
+    const addBtn = document.getElementById('add-player-btn');
+    
+    if (!nameInput || !addBtn) {
+      this.showUserError('Player form elements not found. Please refresh the page.');
+      return;
+    }
+
+    const name = nameInput.value.trim();
+    
+    // Clear any existing errors
+    this.clearErrors();
+    nameInput.classList.remove('error');
+    
+    // Show loading state - properly prevent multiple clicks
+    addBtn.classList.add('loading');
+    addBtn.disabled = true;
+    
+    try {
+      const result = await this.playerManager.addPlayer(name);
+      
+      if (result.success) {
+        nameInput.value = '';
+        nameInput.classList.remove('error');
+        await this.updatePlayerList();
+        await this.updateGameControls();
         
-        // Start game button
-        if (this.elements['start-game-btn']) {
-            this.elements['start-game-btn'].addEventListener('click', () => {
-                this.handleStartGame();
-            });
-        }
+        // Show success feedback
+        this.showSuccessMessage(`Player "${result.player.name}" added successfully!`);
         
-        // Back to setup button
-        if (this.elements['back-to-setup-btn']) {
-            this.elements['back-to-setup-btn'].addEventListener('click', () => {
-                this.handleBackToSetup();
-            });
-        }
-        
-        // Player name input - clear errors on input
-        if (this.elements['player-name']) {
-            this.elements['player-name'].addEventListener('input', () => {
-                this.clearInputError();
-            });
-        }
+        // Focus back to input for better UX
+        nameInput.focus();
+      } else {
+        nameInput.classList.add('error');
+        this.showInputError(nameInput, result.error);
+      }
+    } catch (error) {
+      this.showUserError('Failed to add player. Please try again.', error);
+      nameInput.classList.add('error');
+    } finally {
+      // Remove loading state after synchronized delay
+      setTimeout(() => {
+        addBtn.classList.remove('loading');
+        addBtn.disabled = false;
+      }, this.TIMING.BUTTON_LOADING);
+    }
+  }
+
+  /**
+   * Show success message to user
+   */
+  showSuccessMessage(message) {
+    const container = document.getElementById('success-container') || this.createSuccessContainer();
+    container.innerHTML = `
+      <div class="success-message">
+        ${message}
+      </div>
+    `;
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      container.innerHTML = '';
+    }, 3000);
+  }
+
+  /**
+   * Create success message container
+   */
+  createSuccessContainer() {
+    const container = document.createElement('div');
+    container.id = 'success-container';
+    container.className = 'fade-in';
+    
+    const playerSetup = document.querySelector('.player-setup');
+    if (playerSetup) {
+      playerSetup.appendChild(container);
     }
     
-    handleAddPlayer() {
-        const nameInput = this.elements['player-name'];
-        const errorContainer = this.elements['error-container'];
-        const addButton = this.elements['add-player-btn'];
-        
-        if (!nameInput || !errorContainer || !addButton) {
-            console.error('Required elements not found for adding player');
-            return;
-        }
-        
-        const playerName = nameInput.value.trim();
-        
-        if (!playerName) {
-            this.showInputError('Please enter a player name');
-            return;
-        }
-        
-        // Show loading state
-        this.uiComponents.setButtonLoading(addButton, true);
-        
-        try {
-            const player = this.playerManager.addPlayer(playerName);
-            
-            // Clear form
-            nameInput.value = '';
-            this.clearInputError();
-            
-            // Show success
-            this.uiComponents.showSuccess(errorContainer, `Player "${player.name}" added successfully!`);
-            
-            // Update UI
-            this.updatePlayerList();
-            this.updateGameControls();
-            
-        } catch (error) {
-            this.showInputError(error.message);
-        } finally {
-            // Remove loading state
-            setTimeout(() => {
-                this.uiComponents.setButtonLoading(addButton, false);
-            }, 300);
-        }
+    return container;
+  }
+
+  /**
+   * Clear all error messages
+   */
+  clearErrors() {
+    const errors = document.querySelectorAll('.error-message');
+    errors.forEach(error => error.remove());
+  }
+
+  /**
+   * Handle removing a player
+   */
+  async handlePlayerRemove(playerId) {
+    try {
+      const result = await this.playerManager.removePlayer(playerId);
+      
+      if (result.success) {
+        await this.updatePlayerList();
+        await this.updateGameControls();
+        this.showSuccessMessage('Player removed successfully!');
+      } else {
+        this.showUserError(`Failed to remove player: ${result.error}`);
+      }
+    } catch (error) {
+      this.showUserError('Failed to remove player. Please try again.', error);
+    }
+  }
+
+  /**
+   * Update the player list display
+   */
+  async updatePlayerList() {
+    const playerListContainer = document.getElementById('player-list');
+    if (!playerListContainer) {
+      console.warn('Player list container not found');
+      return;
+    }
+
+    const players = this.playerManager.getPlayers();
+    const html = await this.ui.renderPlayerList(players, this.handlePlayerRemove);
+    
+    playerListContainer.innerHTML = html;
+    playerListContainer.classList.add('fade-in');
+  }
+
+  /**
+   * Update game control states
+   */
+  async updateGameControls() {
+    const startBtn = document.getElementById('start-game-btn');
+    const playerCount = document.getElementById('player-count');
+    
+    if (!startBtn) {
+      console.warn('Start game button not found');
+      return;
+    }
+
+    const players = this.playerManager.getPlayers();
+    const canStart = players.length >= 2;
+    
+    // Update button state
+    startBtn.disabled = !canStart;
+    if (canStart) {
+      startBtn.classList.remove('disabled');
+    } else {
+      startBtn.classList.add('disabled');
     }
     
-    handleRemovePlayer(playerId) {
-        const errorContainer = this.elements['error-container'];
-        
-        try {
-            const removedPlayer = this.playerManager.removePlayer(playerId);
-            
-            if (errorContainer) {
-                this.uiComponents.showSuccess(errorContainer, `Player "${removedPlayer.name}" removed`);
-            }
-            
-            this.updatePlayerList();
-            this.updateGameControls();
-            
-        } catch (error) {
-            if (errorContainer) {
-                this.uiComponents.showError(errorContainer, error.message);
-            }
-        }
+    // Update player count display
+    if (playerCount) {
+      playerCount.textContent = `${players.length} player${players.length !== 1 ? 's' : ''} ready`;
     }
+  }
+
+  /**
+   * Handle game start with smooth transition
+   */
+  async handleGameStart() {
+    const startBtn = document.getElementById('start-game-btn');
     
-    handleStartGame() {
-        if (!this.playerManager.canStartGame()) {
-            const errorContainer = this.elements['error-container'];
-            if (errorContainer) {
-                this.uiComponents.showError(errorContainer, 'At least 2 players are required to start the game');
-            }
-            return;
-        }
-        
-        // Smooth transition to game interface
-        const currentSection = this.elements['player-setup-section'];
-        const gameSection = this.elements['game-interface-section'];
-        
-        if (currentSection && gameSection) {
-            this.currentSection = 'game';
-            this.uiComponents.smoothTransition(currentSection, gameSection, () => {
-                console.log('Game started with players:', this.playerManager.getPlayers());
-            });
-        }
+    if (!startBtn || startBtn.disabled) {
+      return;
     }
+
+    const players = this.playerManager.getPlayers();
+    if (players.length < 2) {
+      this.showUserError('At least 2 players are required to start the game.');
+      return;
+    }
+
+    // Show loading state
+    startBtn.classList.add('loading');
+    startBtn.disabled = true;
+
+    try {
+      // Smooth transition from player setup to game
+      await this.transitionToGame();
+      
+      // Here you would initialize the actual game
+      console.log('Starting game with players:', players);
+      
+      // Example: Dispatch custom event for game initialization
+      const gameStartEvent = new CustomEvent('gameStart', {
+        detail: { players }
+      });
+      document.dispatchEvent(gameStartEvent);
+      
+    } catch (error) {
+      this.showUserError('Failed to start game. Please try again.', error);
+    } finally {
+      startBtn.classList.remove('loading');
+      startBtn.disabled = false;
+    }
+  }
+
+  /**
+   * Smooth transition from player setup to game interface
+   */
+  async transitionToGame() {
+    const setupSection = document.querySelector('.player-setup');
+    const listSection = document.querySelector('.player-list');
     
-    handleBackToSetup() {
-        const currentSection = this.elements['game-interface-section'];
-        const setupSection = this.elements['player-setup-section'];
-        
-        if (currentSection && setupSection) {
-            this.currentSection = 'player-setup';
-            this.uiComponents.smoothTransition(currentSection, setupSection, () => {
-                console.log('Back to player setup');
-            });
-        }
+    if (setupSection && listSection) {
+      // Add exit animation classes
+      setupSection.classList.add('section-exit');
+      listSection.classList.add('section-exit');
+      
+      // Wait for exit animation to complete (synchronized with CSS timing)
+      await new Promise(resolve => {
+        setTimeout(() => {
+          setupSection.classList.add('section-exit-active');
+          listSection.classList.add('section-exit-active');
+          resolve();
+        }, this.TIMING.SMOOTH_TRANSITION);
+      });
+      
+      // Hide sections after transition
+      setTimeout(() => {
+        setupSection.classList.add('hidden');
+        listSection.classList.add('hidden');
+      }, this.TIMING.SMOOTH_TRANSITION);
     }
+  }
+
+  /**
+   * Get current application state
+   */
+  getState() {
+    return {
+      isInitialized: this.isInitialized,
+      players: this.playerManager.getPlayers(),
+      canStartGame: this.playerManager.getPlayers().length >= 2
+    };
+  }
+
+  /**
+   * Reset the application to initial state
+   */
+  async reset() {
+    this.playerManager.clearPlayers();
+    await this.updatePlayerList();
+    await this.updateGameControls();
+    this.clearErrors();
     
-    updatePlayerList() {
-        const playersGrid = this.elements['players-grid'];
-        const noPlayersDiv = this.elements['no-players'];
-        const playerCountSpan = this.elements['player-count'];
-        
-        if (!playersGrid || !noPlayersDiv || !playerCountSpan) {
-            console.error('Player list elements not found');
-            return;
-        }
-        
-        const players = this.playerManager.getPlayers();
-        const playerCount = players.length;
-        
-        // Update player count
-        playerCountSpan.textContent = `${playerCount} player${playerCount !== 1 ? 's' : ''}`;
-        
-        // Clear existing players
-        playersGrid.innerHTML = '';
-        
-        if (playerCount === 0) {
-            noPlayersDiv.classList.remove('hidden');
-            playersGrid.classList.add('hidden');
-        } else {
-            noPlayersDiv.classList.add('hidden');
-            playersGrid.classList.remove('hidden');
-            
-            // Add player items
-            players.forEach(player => {
-                const playerItem = this.uiComponents.createPlayerItem(player, (playerId) => {
-                    this.handleRemovePlayer(playerId);
-                });
-                playersGrid.appendChild(playerItem);
-            });
-        }
+    // Clear input
+    const nameInput = document.getElementById('player-name');
+    if (nameInput) {
+      nameInput.value = '';
+      nameInput.classList.remove('error');
     }
-    
-    updateGameControls() {
-        const startButton = this.elements['start-game-btn'];
-        
-        if (!startButton) {
-            console.error('Start game button not found');
-            return;
-        }
-        
-        const canStart = this.playerManager.canStartGame();
-        const playerCount = this.playerManager.getPlayerCount();
-        
-        this.uiComponents.updateButtonState(
-            startButton,
-            canStart,
-            canStart ? `Start Game (${playerCount} players)` : `Need ${2 - playerCount} more player${2 - playerCount !== 1 ? 's' : ''}`
-        );
-    }
-    
-    showInputError(message) {
-        const nameInput = this.elements['player-name'];
-        const errorContainer = this.elements['error-container'];
-        
-        if (nameInput) {
-            nameInput.classList.add('error');
-        }
-        
-        if (errorContainer) {
-            this.uiComponents.showError(errorContainer, message);
-        }
-    }
-    
-    clearInputError() {
-        const nameInput = this.elements['player-name'];
-        
-        if (nameInput) {
-            nameInput.classList.remove('error');
-        }
-    }
-    
-    showPlayerSetup() {
-        const setupSection = this.elements['player-setup-section'];
-        const gameSection = this.elements['game-interface-section'];
-        
-        if (setupSection && gameSection) {
-            setupSection.classList.remove('hidden');
-            gameSection.classList.add('hidden');
-            this.currentSection = 'player-setup';
-        }
-    }
+  }
 }
 
 // Initialize app when DOM is loaded
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        new App();
-    });
-} else {
-    new App();
-}
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const app = new App();
+    await app.init();
+    
+    // Make app globally available for testing and debugging
+    window.app = app;
+  } catch (error) {
+    console.error('Failed to initialize app:', error);
+    document.body.innerHTML = `
+      <div class="container">
+        <div class="error-message">
+          Failed to initialize application. Please refresh the page.
+        </div>
+      </div>
+    `;
+  }
+});
+
+// Export for testing and module usage
+export { App };
+export default App;
