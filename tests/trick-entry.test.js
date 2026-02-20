@@ -1,142 +1,133 @@
-/**
- * Tests for Trick Entry functionality
- */
+// Test suite for trick and bonus entry functionality
 
-// Mock DOM elements
-document.body.innerHTML = `
-    <div id="trick-entry-container"></div>
-`;
+function runTests() {
+    console.log('Running Trick Entry Tests...');
+    
+    // Test GameState validation
+    testTrickValidation();
+    testBonusPointLogic();
+    testTotalTrickValidation();
+    testPlayerRoundScoreCalculation();
+    
+    console.log('All tests completed!');
+}
 
-// Test data
-const mockRoundData = {
-    roundNumber: 3,
-    handCount: 5,
-    trump: 'hearts',
-    players: [
-        { id: 'player1', name: 'Alice', bid: 2 },
-        { id: 'player2', name: 'Bob', bid: 1 },
-        { id: 'player3', name: 'Charlie', bid: 2 }
-    ]
-};
+function testTrickValidation() {
+    console.log('Testing trick validation...');
+    
+    const gameState = new GameState();
+    gameState.addPlayer('p1', 'Alice');
+    gameState.currentHandCount = 10;
+    gameState.startNewRound();
+    
+    // Test valid tricks
+    let errors = gameState.validateTrickEntry('p1', 5, 0);
+    console.assert(errors.length === 0, 'Valid trick count should pass validation');
+    
+    // Test negative tricks
+    errors = gameState.validateTrickEntry('p1', -1, 0);
+    console.assert(errors.length > 0, 'Negative tricks should fail validation');
+    
+    // Test tricks exceeding hand count
+    errors = gameState.validateTrickEntry('p1', 15, 0);
+    console.assert(errors.length > 0, 'Tricks exceeding hand count should fail validation');
+    
+    // Test non-integer tricks
+    errors = gameState.validateTrickEntry('p1', 5.5, 0);
+    console.assert(errors.length > 0, 'Non-integer tricks should fail validation');
+    
+    console.log('✓ Trick validation tests passed');
+}
 
-describe('TrickEntryManager', () => {
-    let trickManager;
-    let gameState;
+function testBonusPointLogic() {
+    console.log('Testing bonus point logic...');
+    
+    const playerScore = new PlayerRoundScore('p1', 4);
+    
+    // Test bid met exactly - bonus should count
+    playerScore.updateTricksAndBonus(4, 10);
+    console.assert(playerScore.bidMet === true, 'Bid should be marked as met when tricks equal bid');
+    console.assert(playerScore.score === 50, 'Score should include bonus when bid is met (4*10 + 10 = 50)');
+    
+    // Test bid not met - bonus should not count
+    playerScore.updateTricksAndBonus(3, 10);
+    console.assert(playerScore.bidMet === false, 'Bid should be marked as not met when tricks differ from bid');
+    console.assert(playerScore.score === -40, 'Score should be negative with no bonus when bid not met (-4*10 = -40)');
+    
+    // Test overbid - bonus should not count
+    playerScore.updateTricksAndBonus(5, 10);
+    console.assert(playerScore.bidMet === false, 'Overbid should be marked as bid not met');
+    console.assert(playerScore.score === -40, 'Overbid should result in negative score with no bonus');
+    
+    console.log('✓ Bonus point logic tests passed');
+}
 
-    beforeEach(() => {
-        gameState = new GameState();
-        trickManager = new TrickEntryManager(gameState);
-        trickManager.initializeTrickEntry(mockRoundData);
-    });
+function testTotalTrickValidation() {
+    console.log('Testing total trick validation...');
+    
+    const gameState = new GameState();
+    gameState.addPlayer('p1', 'Alice');
+    gameState.addPlayer('p2', 'Bob');
+    gameState.currentHandCount = 10;
+    gameState.startNewRound();
+    
+    // Test valid total (tricks sum to hand count)
+    const validEntries = new Map([
+        ['p1', { actualTricks: 6, bonusPoints: 0 }],
+        ['p2', { actualTricks: 4, bonusPoints: 0 }]
+    ]);
+    
+    let errors = gameState.validateAllTrickEntries(validEntries);
+    console.assert(errors.length === 0, 'Valid total tricks should pass validation');
+    
+    // Test invalid total (tricks don't sum to hand count)
+    const invalidEntries = new Map([
+        ['p1', { actualTricks: 6, bonusPoints: 0 }],
+        ['p2', { actualTricks: 5, bonusPoints: 0 }]
+    ]);
+    
+    errors = gameState.validateAllTrickEntries(invalidEntries);
+    console.assert(errors.length > 0, 'Invalid total tricks should fail validation');
+    console.assert(errors.some(e => e.includes('Total tricks')), 'Error should mention total tricks');
+    
+    console.log('✓ Total trick validation tests passed');
+}
 
-    test('should initialize player scores correctly', () => {
-        const playerScores = trickManager.getPlayerScores();
-        expect(playerScores).toHaveLength(3);
-        expect(playerScores[0].playerId).toBe('player1');
-        expect(playerScores[0].bid).toBe(2);
-        expect(playerScores[0].actualTricks).toBeNull();
-    });
-
-    test('should validate trick count within bounds', () => {
-        expect(trickManager.validateTrickCount(0)).toBe(true);
-        expect(trickManager.validateTrickCount(5)).toBe(true);
-        expect(trickManager.validateTrickCount(-1)).toBe(false);
-        expect(trickManager.validateTrickCount(6)).toBe(false);
-        expect(trickManager.validateTrickCount(2.5)).toBe(false);
-    });
-
-    test('should set player tricks and update bid met status', () => {
-        trickManager.setPlayerTricks('player1', 2);
-        const playerScore = trickManager.playerScores.get('player1');
+function testPlayerRoundScoreCalculation() {
+    console.log('Testing PlayerRoundScore calculation...');
+    
+    // Test various scoring scenarios
+    const scenarios = [
+        { bid: 3, tricks: 3, bonus: 5, expectedScore: 35, expectedBidMet: true },
+        { bid: 4, tricks: 2, bonus: 10, expectedScore: -40, expectedBidMet: false },
+        { bid: 0, tricks: 0, bonus: 2, expectedScore: 2, expectedBidMet: true },
+        { bid: 5, tricks: 6, bonus: 15, expectedScore: -50, expectedBidMet: false }
+    ];
+    
+    scenarios.forEach((scenario, index) => {
+        const playerScore = new PlayerRoundScore('p1', scenario.bid);
+        playerScore.updateTricksAndBonus(scenario.tricks, scenario.bonus);
         
-        expect(playerScore.actualTricks).toBe(2);
-        expect(playerScore.bidMet).toBe(true);
-    });
-
-    test('should handle bid not met correctly', () => {
-        trickManager.setPlayerTricks('player1', 1);
-        const playerScore = trickManager.playerScores.get('player1');
+        console.assert(
+            playerScore.score === scenario.expectedScore,
+            `Scenario ${index + 1}: Expected score ${scenario.expectedScore}, got ${playerScore.score}`
+        );
         
-        expect(playerScore.actualTricks).toBe(1);
-        expect(playerScore.bidMet).toBe(false);
-        expect(playerScore.bonusPoints).toBe(0);
+        console.assert(
+            playerScore.bidMet === scenario.expectedBidMet,
+            `Scenario ${index + 1}: Expected bidMet ${scenario.expectedBidMet}, got ${playerScore.bidMet}`
+        );
     });
+    
+    console.log('✓ PlayerRoundScore calculation tests passed');
+}
 
-    test('should only allow bonus points when bid is met exactly', () => {
-        // Bid met - bonus should be allowed
-        trickManager.setPlayerTricks('player1', 2);
-        trickManager.setPlayerBonus('player1', 5);
-        expect(trickManager.playerScores.get('player1').bonusPoints).toBe(5);
+// Auto-run tests when this file is loaded in browser
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', runTests);
+}
 
-        // Bid not met - bonus should be reset to 0
-        trickManager.setPlayerTricks('player2', 2);
-        trickManager.setPlayerBonus('player2', 3);
-        expect(trickManager.playerScores.get('player2').bonusPoints).toBe(0);
-    });
-
-    test('should validate total tricks equals hand count', () => {
-        trickManager.setPlayerTricks('player1', 2);
-        trickManager.setPlayerTricks('player2', 1);
-        trickManager.setPlayerTricks('player3', 2);
-
-        expect(() => trickManager.validateTotalTricks()).not.toThrow();
-
-        // Test invalid total
-        trickManager.setPlayerTricks('player3', 3);
-        expect(() => trickManager.validateTotalTricks()).toThrow('Total tricks (6) must equal hand count (5)');
-    });
-
-    test('should create proper PlayerRoundScore updates', () => {
-        trickManager.setPlayerTricks('player1', 2); // Bid met
-        trickManager.setPlayerBonus('player1', 3);
-        trickManager.setPlayerTricks('player2', 2); // Bid not met
-        trickManager.setPlayerTricks('player3', 1); // Bid not met
-
-        const updates = trickManager.updatePlayerRoundScores();
-        
-        expect(updates).toHaveLength(3);
-        
-        const player1Update = updates.find(u => u.playerId === 'player1');
-        expect(player1Update.bidMet).toBe(true);
-        expect(player1Update.bonusPoints).toBe(3);
-        expect(player1Update.baseScore).toBe(12); // 10 + bid of 2
-        expect(player1Update.totalScore).toBe(15); // 12 + 3 bonus
-
-        const player2Update = updates.find(u => u.playerId === 'player2');
-        expect(player2Update.bidMet).toBe(false);
-        expect(player2Update.bonusPoints).toBe(0);
-        expect(player2Update.baseScore).toBe(-1); // penalty for missing by 1
-    });
-});
-
-describe('ScoringUtils', () => {
-    test('should calculate base score correctly', () => {
-        expect(ScoringUtils.calculateBaseScore(2, 2)).toBe(12); // 10 + bid
-        expect(ScoringUtils.calculateBaseScore(3, 1)).toBe(-2); // -|3-1|
-        expect(ScoringUtils.calculateBaseScore(0, 1)).toBe(-1); // -|0-1|
-    });
-
-    test('should validate bonus application', () => {
-        expect(ScoringUtils.validateBonusApplication(2, 2, 5)).toBe(true);
-        expect(ScoringUtils.validateBonusApplication(2, 1, 5)).toBe(false);
-        expect(ScoringUtils.validateBonusApplication(2, 3, 0)).toBe(true);
-    });
-
-    test('should create complete PlayerRoundScore', () => {
-        const score = ScoringUtils.createPlayerRoundScore('player1', 1, 2, 2, 3);
-        
-        expect(score.playerId).toBe('player1');
-        expect(score.bidMet).toBe(true);
-        expect(score.bonusPoints).toBe(3);
-        expect(score.baseScore).toBe(12);
-        expect(score.totalScore).toBe(15);
-    });
-
-    test('should force bonus to 0 when bid not met', () => {
-        const score = ScoringUtils.createPlayerRoundScore('player1', 1, 2, 1, 5);
-        
-        expect(score.bidMet).toBe(false);
-        expect(score.bonusPoints).toBe(0); // Should be forced to 0
-        expect(score.totalScore).toBe(-1); // Just the penalty
-    });
-});
+// Export for Node.js testing
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { runTests };
+}

@@ -1,256 +1,168 @@
-/**
- * Game State Management
- * Manages overall game state including rounds, players, and scores
- */
+class PlayerRoundScore {
+    constructor(playerId, bid = 0) {
+        this.playerId = playerId;
+        this.bid = bid;
+        this.actualTricks = 0;
+        this.bonusPoints = 0;
+        this.score = 0;
+        this.bidMet = false;
+    }
+    
+    updateTricksAndBonus(actualTricks, bonusPoints) {
+        this.actualTricks = actualTricks;
+        this.bonusPoints = bonusPoints;
+        this.bidMet = (this.actualTricks === this.bid);
+        this.calculateScore();
+    }
+    
+    calculateScore() {
+        if (this.bidMet) {
+            // Bid met exactly: 10 points per bid + bonus points
+            this.score = (this.bid * 10) + this.bonusPoints;
+        } else {
+            // Bid not met: lose 10 points per bid, no bonus
+            this.score = -(this.bid * 10);
+        }
+    }
+}
 
 class GameState {
     constructor() {
         this.players = [];
-        this.currentRound = 0;
-        this.rounds = [];
-        this.playerRoundScores = new Map(); // Map of playerId -> array of round scores
-        this.gamePhase = 'setup'; // setup, bidding, playing, trick_entry, scoring, complete
+        this.currentRound = 1;
+        this.currentHandCount = 13;
+        this.roundScores = new Map(); // roundNumber -> Map(playerId -> PlayerRoundScore)
+        this.gamePhase = 'setup'; // setup, bidding, playing, trick_entry, round_complete
     }
-
-    /**
-     * Add a player to the game
-     * @param {Object} player - Player object {id, name}
-     */
-    addPlayer(player) {
-        this.players.push(player);
-        this.playerRoundScores.set(player.id, []);
+    
+    addPlayer(playerId, name) {
+        this.players.push({ id: playerId, name: name });
     }
-
-    /**
-     * Start a new round
-     * @param {number} handCount - Number of cards per player
-     * @param {string} trump - Trump suit
-     */
-    startRound(handCount, trump) {
-        this.currentRound++;
-        const round = {
-            roundNumber: this.currentRound,
-            handCount: handCount,
-            trump: trump,
-            players: this.players.map(player => ({
-                id: player.id,
-                name: player.name,
-                bid: null,
-                actualTricks: null,
-                bonusPoints: 0
-            })),
-            phase: 'bidding'
-        };
-        
-        this.rounds.push(round);
-        this.gamePhase = 'bidding';
-        return round;
-    }
-
-    /**
-     * Set player bid for current round
-     * @param {string} playerId - Player ID
-     * @param {number} bid - Bid amount
-     */
-    setPlayerBid(playerId, bid) {
-        const currentRoundData = this.getCurrentRound();
-        if (!currentRoundData) {
-            throw new Error('No active round');
-        }
-
-        const player = currentRoundData.players.find(p => p.id === playerId);
-        if (!player) {
-            throw new Error(`Player ${playerId} not found in current round`);
-        }
-
-        player.bid = bid;
-    }
-
-    /**
-     * Complete bidding phase and move to playing
-     */
-    completeBidding() {
-        const currentRoundData = this.getCurrentRound();
-        if (!currentRoundData) {
-            throw new Error('No active round');
-        }
-
-        // Verify all players have bid
-        const allBidsComplete = currentRoundData.players.every(player => player.bid !== null);
-        if (!allBidsComplete) {
-            throw new Error('Not all players have placed bids');
-        }
-
-        currentRoundData.phase = 'playing';
-        this.gamePhase = 'playing';
-    }
-
-    /**
-     * Complete playing phase and move to trick entry
-     */
-    completePlaying() {
-        const currentRoundData = this.getCurrentRound();
-        if (!currentRoundData) {
-            throw new Error('No active round');
-        }
-
-        currentRoundData.phase = 'trick_entry';
-        this.gamePhase = 'trick_entry';
-    }
-
-    /**
-     * Update player round scores after trick entry
-     * @param {Array} playerScores - Array of PlayerRoundScore objects
-     */
-    updatePlayerRoundScores(playerScores) {
-        playerScores.forEach(score => {
-            const playerScoreHistory = this.playerRoundScores.get(score.playerId);
-            if (playerScoreHistory) {
-                // Update existing round score or add new one
-                const existingIndex = playerScoreHistory.findIndex(s => s.round === score.round);
-                if (existingIndex >= 0) {
-                    playerScoreHistory[existingIndex] = score;
-                } else {
-                    playerScoreHistory.push(score);
-                }
-            }
+    
+    startNewRound() {
+        this.roundScores.set(this.currentRound, new Map());
+        this.players.forEach(player => {
+            this.roundScores.get(this.currentRound).set(
+                player.id, 
+                new PlayerRoundScore(player.id)
+            );
         });
-
-        // Update current round data
-        const currentRoundData = this.getCurrentRound();
-        if (currentRoundData) {
-            playerScores.forEach(score => {
-                const player = currentRoundData.players.find(p => p.id === score.playerId);
-                if (player) {
-                    player.actualTricks = score.actualTricks;
-                    player.bonusPoints = score.bonusPoints;
-                }
-            });
-            
-            currentRoundData.phase = 'scoring';
-            this.gamePhase = 'scoring';
+        this.gamePhase = 'bidding';
+    }
+    
+    updatePlayerBid(playerId, bid) {
+        const currentRoundScores = this.roundScores.get(this.currentRound);
+        if (currentRoundScores && currentRoundScores.has(playerId)) {
+            currentRoundScores.get(playerId).bid = bid;
         }
     }
-
-    /**
-     * Get current round data
-     * @returns {Object|null} Current round object or null
-     */
-    getCurrentRound() {
-        return this.rounds[this.currentRound - 1] || null;
+    
+    updatePlayerTricksAndBonus(playerId, actualTricks, bonusPoints) {
+        const currentRoundScores = this.roundScores.get(this.currentRound);
+        if (currentRoundScores && currentRoundScores.has(playerId)) {
+            const playerScore = currentRoundScores.get(playerId);
+            playerScore.updateTricksAndBonus(actualTricks, bonusPoints);
+            return true;
+        }
+        return false;
     }
-
-    /**
-     * Get player scores for a specific round
-     * @param {string} playerId - Player ID
-     * @param {number} roundNumber - Round number
-     * @returns {Object|null} Player round score or null
-     */
-    getPlayerRoundScore(playerId, roundNumber) {
-        const playerScores = this.playerRoundScores.get(playerId);
-        if (!playerScores) return null;
+    
+    validateTrickEntry(playerId, actualTricks, bonusPoints) {
+        const errors = [];
         
-        return playerScores.find(score => score.round === roundNumber) || null;
-    }
-
-    /**
-     * Get all scores for a player
-     * @param {string} playerId - Player ID
-     * @returns {Array} Array of player round scores
-     */
-    getPlayerScores(playerId) {
-        return this.playerRoundScores.get(playerId) || [];
-    }
-
-    /**
-     * Get cumulative score for a player
-     * @param {string} playerId - Player ID
-     * @returns {number} Total score across all rounds
-     */
-    getPlayerTotalScore(playerId) {
-        const scores = this.getPlayerScores(playerId);
-        return scores.reduce((total, score) => total + score.totalScore, 0);
-    }
-
-    /**
-     * Get game summary with all player totals
-     * @returns {Array} Array of player summaries
-     */
-    getGameSummary() {
-        return this.players.map(player => ({
-            id: player.id,
-            name: player.name,
-            totalScore: this.getPlayerTotalScore(player.id),
-            roundScores: this.getPlayerScores(player.id)
-        })).sort((a, b) => b.totalScore - a.totalScore); // Sort by score descending
-    }
-
-    /**
-     * Check if game is complete
-     * @returns {boolean} True if all planned rounds are complete
-     */
-    isGameComplete() {
-        // This would depend on your game rules for total number of rounds
-        // For now, assume game continues until manually ended
-        return this.gamePhase === 'complete';
-    }
-
-    /**
-     * End the game
-     */
-    endGame() {
-        this.gamePhase = 'complete';
-    }
-
-    /**
-     * Export game state for saving
-     * @returns {Object} Serializable game state
-     */
-    exportState() {
-        return {
-            players: this.players,
-            currentRound: this.currentRound,
-            rounds: this.rounds,
-            playerRoundScores: Array.from(this.playerRoundScores.entries()),
-            gamePhase: this.gamePhase
-        };
-    }
-
-    /**
-     * Import game state from saved data
-     * @param {Object} state - Saved game state
-     */
-    importState(state) {
-        this.players = state.players || [];
-        this.currentRound = state.currentRound || 0;
-        this.rounds = state.rounds || [];
-        this.playerRoundScores = new Map(state.playerRoundScores || []);
-        this.gamePhase = state.gamePhase || 'setup';
-    }
-}
-
-// PlayerRoundScore class for type consistency
-class PlayerRoundScore {
-    constructor(playerId, round, bid, actualTricks, bonusPoints, bidMet) {
-        this.playerId = playerId;
-        this.round = round;
-        this.bid = bid;
-        this.actualTricks = actualTricks;
-        this.bonusPoints = bonusPoints;
-        this.bidMet = bidMet;
-        this.baseScore = this.calculateBaseScore();
-        this.totalScore = this.baseScore + (this.bidMet ? this.bonusPoints : 0);
-    }
-
-    calculateBaseScore() {
-        if (this.bidMet) {
-            return 10 + this.bid;
-        } else {
-            return Math.abs(this.bid - this.actualTricks) * -1;
+        // Validate trick count
+        if (actualTricks < 0) {
+            errors.push(`${this.getPlayerName(playerId)}: Tricks cannot be negative`);
         }
+        if (actualTricks > this.currentHandCount) {
+            errors.push(`${this.getPlayerName(playerId)}: Tricks cannot exceed hand count (${this.currentHandCount})`);
+        }
+        if (!Number.isInteger(actualTricks)) {
+            errors.push(`${this.getPlayerName(playerId)}: Tricks must be a whole number`);
+        }
+        
+        // Validate bonus points
+        if (!Number.isInteger(bonusPoints)) {
+            errors.push(`${this.getPlayerName(playerId)}: Bonus points must be a whole number`);
+        }
+        
+        return errors;
+    }
+    
+    validateAllTrickEntries(trickEntries) {
+        const errors = [];
+        let totalTricks = 0;
+        
+        // Validate individual entries
+        for (const [playerId, entry] of trickEntries) {
+            const playerErrors = this.validateTrickEntry(playerId, entry.actualTricks, entry.bonusPoints);
+            errors.push(...playerErrors);
+            
+            if (playerErrors.length === 0) {
+                totalTricks += entry.actualTricks;
+            }
+        }
+        
+        // Validate total tricks equals hand count
+        if (errors.length === 0 && totalTricks !== this.currentHandCount) {
+            errors.push(`Total tricks (${totalTricks}) must equal hand count (${this.currentHandCount})`);
+        }
+        
+        return errors;
+    }
+    
+    submitAllTrickEntries(trickEntries) {
+        const validationErrors = this.validateAllTrickEntries(trickEntries);
+        
+        if (validationErrors.length > 0) {
+            return { success: false, errors: validationErrors };
+        }
+        
+        // Update all player scores
+        for (const [playerId, entry] of trickEntries) {
+            this.updatePlayerTricksAndBonus(playerId, entry.actualTricks, entry.bonusPoints);
+        }
+        
+        this.gamePhase = 'round_complete';
+        return { success: true };
+    }
+    
+    getCurrentRoundScores() {
+        return this.roundScores.get(this.currentRound) || new Map();
+    }
+    
+    getPlayerName(playerId) {
+        const player = this.players.find(p => p.id === playerId);
+        return player ? player.name : `Player ${playerId}`;
+    }
+    
+    getTotalScoreForPlayer(playerId) {
+        let totalScore = 0;
+        for (const roundScores of this.roundScores.values()) {
+            if (roundScores.has(playerId)) {
+                totalScore += roundScores.get(playerId).score;
+            }
+        }
+        return totalScore;
+    }
+    
+    nextRound() {
+        this.currentRound++;
+        // Adjust hand count based on game rules (example: decrease by 1 each round)
+        this.currentHandCount = Math.max(1, this.currentHandCount - 1);
+        this.startNewRound();
+    }
+    
+    setGamePhase(phase) {
+        this.gamePhase = phase;
+    }
+    
+    getGamePhase() {
+        return this.gamePhase;
     }
 }
 
 // Export for use in other modules
-window.GameState = GameState;
-window.PlayerRoundScore = PlayerRoundScore;
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { GameState, PlayerRoundScore };
+}
