@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { TrickBonusService } from '../services/trickBonusService';
+import * as TrickBonusService from '../services/trickBonusService';
 
 /**
  * Custom hook for managing trick and bonus entry functionality
