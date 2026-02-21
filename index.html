@@ -6,16 +6,28 @@
     <title>Vanilla JS App</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="css/scoreboard.css">
+    <link rel="stylesheet" href="css/phases.css">
 </head>
 <body>
     <div id="app">
         <header>
             <h1>Vanilla JS Application</h1>
+            <div class="phase-indicator">Setup</div>
         </header>
         <main>
             <div id="player-setup-container"></div>
             <div id="player-list-container"></div>
             <button type="button" id="start-game-btn" disabled>Need 2 more players</button>
+            
+            <div id="bidding-phase-container" class="phase-container phase-hidden">
+                <button id="start-bidding-btn">Start Bidding</button>
+            </div>
+            <div id="resolution-phase-container" class="phase-container phase-hidden">
+                <button id="submit-bids-btn">Submit Bids</button>
+            </div>
+            <div id="completion-container" class="phase-container phase-hidden">
+                <button id="next-round-btn">Next Round</button>
+            </div>
             
             <section id="scoreboard" class="scoreboard hidden">
                 <header class="scoreboard-header">

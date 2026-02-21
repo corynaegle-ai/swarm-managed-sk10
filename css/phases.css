@@ -86,17 +86,17 @@
   border-color: #ffc107;
 }
 
-#bidding-container {
+#bidding-phase-container {
   background: linear-gradient(135deg, #cff4fc, #b3e5fc);
   border-color: #17a2b8;
 }
 
-#scoring-container {
+#resolution-phase-container {
   background: linear-gradient(135deg, #ffe8d1, #ffcc80);
   border-color: #fd7e14;
 }
 
-#completed-container {
+#completion-container {
   background: linear-gradient(135deg, #d4edda, #a5d6a7);
   border-color: #28a745;
 }
