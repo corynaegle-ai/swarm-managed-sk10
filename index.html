@@ -2,168 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vanilla JS App</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="css/scoreboard.css">
+    <title>Swarm Managed Sk10</title>
+    <link rel="stylesheet" href="css/phases.css">
 </head>
 <body>
-    <div id="app">
-        <header>
-            <h1>Vanilla JS Application</h1>
-        </header>
-        <main>
-            <div id="player-setup-container"></div>
-            <div id="player-list-container"></div>
-            <button type="button" id="start-game-btn" disabled>Need 2 more players</button>
-            
-            <section id="scoreboard" class="scoreboard hidden">
-                <header class="scoreboard-header">
-                    <h2>Scoreboard</h2>
-                    <div class="game-status">
-                        <span class="current-round">Round 1</span>
-                        <span class="game-phase">In Progress</span>
-                    </div>
-                </header>
-                
-                <div class="scoreboard-content">
-                    <div class="player-scores-container">
-                        <h3>Current Standings</h3>
-                        <div class="player-cards" id="player-cards">
-                            <!-- Player cards will be dynamically generated -->
-                        </div>
-                    </div>
-                    
-                    <div class="round-breakdown-container">
-                        <h3>Round Breakdown</h3>
-                        <div class="table-container">
-                            <table class="round-breakdown-table" id="round-breakdown-table">
-                                <thead>
-                                    <tr>
-                                        <th>Player</th>
-                                        <!-- Round columns will be dynamically added -->
-                                        <th>Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="round-breakdown-body">
-                                    <!-- Round data will be dynamically generated -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    
-                    <div class="final-results hidden" id="final-results">
-                        <h3>Final Results</h3>
-                        <div class="winner-announcement">
-                            <div class="winner-card">
-                                <div class="trophy-icon">🏆</div>
-                                <div class="winner-info">
-                                    <span class="winner-label">Winner</span>
-                                    <span class="winner-name" id="winner-name">Player Name</span>
-                                    <span class="winner-score" id="winner-score">0 points</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="final-standings" id="final-standings">
-                            <!-- Final standings will be dynamically generated -->
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="trick-entry" class="trick-entry">
-                <header class="trick-entry-header">
-                    <h2>Enter Tricks and Bonus Points</h2>
-                    <div class="round-info">
-                        <span class="current-round">Round 1</span>
-                    </div>
-                </header>
-                
-                <form id="trick-entry-form" class="trick-form">
-                    <div class="player-entries-container">
-                        <div class="player-entry" data-player-id="1">
-                            <div class="player-info">
-                                <label class="player-name">Player 1</label>
-                            </div>
-                            <div class="trick-input-group">
-                                <label for="tricks-player-1">Tricks Taken:</label>
-                                <input type="number" id="tricks-player-1" name="tricks-player-1" min="0" max="13" value="0" required>
-                            </div>
-                            <div class="bonus-input-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="bonus-player-1" name="bonus-player-1">
-                                    <span class="checkmark"></span>
-                                    Bonus Points Earned
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="player-entry" data-player-id="2">
-                            <div class="player-info">
-                                <label class="player-name">Player 2</label>
-                            </div>
-                            <div class="trick-input-group">
-                                <label for="tricks-player-2">Tricks Taken:</label>
-                                <input type="number" id="tricks-player-2" name="tricks-player-2" min="0" max="13" value="0" required>
-                            </div>
-                            <div class="bonus-input-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="bonus-player-2" name="bonus-player-2">
-                                    <span class="checkmark"></span>
-                                    Bonus Points Earned
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="player-entry" data-player-id="3">
-                            <div class="player-info">
-                                <label class="player-name">Player 3</label>
-                            </div>
-                            <div class="trick-input-group">
-                                <label for="tricks-player-3">Tricks Taken:</label>
-                                <input type="number" id="tricks-player-3" name="tricks-player-3" min="0" max="13" value="0" required>
-                            </div>
-                            <div class="bonus-input-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="bonus-player-3" name="bonus-player-3">
-                                    <span class="checkmark"></span>
-                                    Bonus Points Earned
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="player-entry" data-player-id="4">
-                            <div class="player-info">
-                                <label class="player-name">Player 4</label>
-                            </div>
-                            <div class="trick-input-group">
-                                <label for="tricks-player-4">Tricks Taken:</label>
-                                <input type="number" id="tricks-player-4" name="tricks-player-4" min="0" max="13" value="0" required>
-                            </div>
-                            <div class="bonus-input-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="bonus-player-4" name="bonus-player-4">
-                                    <span class="checkmark"></span>
-                                    Bonus Points Earned
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="submit" id="submit-tricks-btn" class="submit-btn">Submit Round Results</button>
-                    </div>
-                </form>
-            </section>
-        </main>
+    <div id="setup-phase" class="phase active">
+        <!-- Setup phase content -->
+        <h2>Setup Phase</h2>
+        <p>Configure players and start the game.</p>
+    </div>
+    <div id="bidding-phase" class="phase">
+        <!-- Bidding phase content -->
+        <h2>Bidding Phase</h2>
+        <p>Place your bids.</p>
+    </div>
+    <div id="resolution-phase" class="phase">
+        <!-- Resolution phase content -->
+        <h2>Resolution Phase</h2>
+        <p>Resolve the round.</p>
+    </div>
+    <div id="completion-phase" class="phase">
+        <!-- Completion phase content -->
+        <h2>Game Completed</h2>
+        <p>All rounds finished.</p>
     </div>
     <script src="js/player-manager.js"></script>
     <script src="js/ui-components.js"></script>
-    <script src="app.js"></script>
+    <script src="js/gameState.js"></script>
+    <script src="js/gameFlow.js"></script>
+    <script src="js/app.js"></script>
     <script>
-        // Initialize player UI when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            initializePlayerUI();
+        document.addEventListener('DOMContentLoaded', function() {
+            // Existing initialization code (assumed based on standard structure)
+            // Add call to initGameFlow() after existing code
+            initGameFlow();
         });
     </script>
 </body>
